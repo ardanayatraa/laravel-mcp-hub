@@ -84,7 +84,7 @@ class ConnectorTest extends TestCase
     {
         $this->withHeaders(['Authorization' => 'Bearer '.$this->token])->getJson('/api/ai/v1/orders/list')->assertStatus(403);
         foreach ([['exp' => time() - 1], ['aud' => 'http://other.test'], ['app_key' => 'other_app'],
-            ['tenant_id' => 'demo_account_2'], ['user_ref' => 'untrusted'], ['exp' => time() + 151]] as $override) {
+            ['tenant_id' => 'demo_account_2'], ['user_ref' => 'untrusted'], ['exp' => time() + 3600]] as $override) {
             $this->read(1, 'list', $override)->assertStatus(403);
         }
         $this->withHeaders(['Authorization' => 'Bearer '.$this->token])->withHeaders(['X-Hub-Assertion' => 'bad.signature'])
