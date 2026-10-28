@@ -10,11 +10,25 @@ permissions:
 
 jobs:
   tests:
+    name: Laravel ${{ matrix.laravel }} / PHP ${{ matrix.php }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        php: ['8.2', '8.3', '8.4']
+        include:
+          - {laravel: '5.8', php: '7.2'}
+          - {laravel: '5.8', php: '7.4'}
+          - {laravel: '6', php: '7.2'}
+          - {laravel: '7', php: '7.2'}
+          - {laravel: '8', php: '7.3'}
+          - {laravel: '9', php: '8.0'}
+          - {laravel: '9', php: '8.2'}
+          - {laravel: '10', php: '8.1'}
+          - {laravel: '11', php: '8.2'}
+          - {laravel: '12', php: '8.2'}
+          - {laravel: '12', php: '8.4'}
+          - {laravel: '13', php: '8.3'}
+          - {laravel: '13', php: '8.4'}
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -22,7 +36,26 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: pdo_sqlite
           coverage: none
-          tools: composer:v2
+          tools: composer:2.9.8
       - run: composer validate --strict
-      - run: composer update --prefer-dist --no-interaction --no-progress
-      - run: composer test
+      - run: php scripts/prepare-matrix.php ${{ matrix.laravel }}
+      - run: composer update --working-dir=.compat/${{ matrix.laravel }} --prefer-dist --no-interaction --no-progress
+      - run: composer check-platform-reqs --working-dir=.compat/${{ matrix.laravel }}
+      - run: php .compat/${{ matrix.laravel }}/vendor/bin/phpunit --bootstrap .compat/${{ matrix.laravel }}/vendor/autoload.php --log-junit .compat/results.xml
+      - name: Review historical upstream advisories
+        if: always()
+        shell: bash
+        run: |
+          status=0
+          composer audit --working-dir=.compat/${{ matrix.laravel }} --format=json > .compat/audit.json || status=$?
+          if [ "$status" -gt 3 ]; then exit "$status"; fi
+          php scripts/check-audit.php .compat/audit.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: laravel-${{ matrix.laravel }}-php-${{ matrix.php }}
+          include-hidden-files: true
+          path: |
+            .compat/results.xml
+            .compat/audit.json
+            .compat/${{ matrix.laravel }}/composer.lock
