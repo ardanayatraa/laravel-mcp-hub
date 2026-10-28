@@ -2,16 +2,22 @@
 
 namespace McpHub\Laravel;
 
-use Illuminate\Support\Facades\Http;
+use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
+use McpHub\Laravel\Support\Json;
 use RuntimeException;
 use Throwable;
 
 final class HubClient
 {
-    private int $requestId = 0;
+    private $requestId = 0;
+    private $connection;
+    private $http;
 
-    public function __construct(private Connection $connection)
+    public function __construct(Connection $connection, ?ClientInterface $http = null)
     {
+        $this->connection = $connection;
+        $this->http = $http ?: new Client();
     }
 
     public function rpc(string $method, array $params = [], array $headers = []): array
@@ -33,8 +39,9 @@ final class HubClient
         $version = (string) $this->connection->get('protocol_version');
         $params['_meta'] = ['io.modelcontextprotocol/protocolVersion' => $version,
             'io.modelcontextprotocol/clientCapabilities' => new \stdClass(),
-            'io.modelcontextprotocol/clientInfo' => ['name' => 'laravel-mcp-hub', 'version' => '0.1.0-alpha.1']];
-        $safeHeaders = ['Accept' => 'application/json, text/event-stream', 'MCP-Protocol-Version' => $version,
+            'io.modelcontextprotocol/clientInfo' => ['name' => 'laravel-mcp-hub', 'version' => '0.2.0-alpha.1']];
+        $safeHeaders = ['Accept' => 'application/json, text/event-stream', 'Content-Type' => 'application/json',
+            'MCP-Protocol-Version' => $version,
             'MCP-Method' => $method, 'Origin' => (string) $this->connection->get('source_url')];
         if (isset($params['name'])) {
             $safeHeaders['MCP-Name'] = $params['name'];
@@ -43,20 +50,24 @@ final class HubClient
             $safeHeaders['X-Hub-Delegation'] = $headers['X-Hub-Delegation'];
         }
         try {
-            $response = Http::withHeaders($safeHeaders)->withToken($token)->withoutRedirecting()
-                ->connectTimeout(3)->timeout(max(1, min(120, (int) $this->connection->get('timeout', 12))))
-                ->post($url, ['jsonrpc' => '2.0', 'id' => ++$this->requestId, 'method' => $method,
-                    'params' => $params === [] ? new \stdClass() : $params]);
-            if (! $response->successful() || strlen($response->body()) > 1048576) {
+            $safeHeaders['Authorization'] = 'Bearer '.$token;
+            $response = $this->http->request('POST', $url, [
+                'headers' => $safeHeaders, 'allow_redirects' => false, 'http_errors' => false,
+                'connect_timeout' => 3, 'timeout' => max(1, min(120, (int) $this->connection->get('timeout', 12))),
+                'body' => Json::encode(['jsonrpc' => '2.0', 'id' => ++$this->requestId, 'method' => $method,
+                    'params' => $params === [] ? new \stdClass() : $params]),
+            ]);
+            $raw = $response->getBody()->read(1048577);
+            if ($response->getStatusCode() < 200 || $response->getStatusCode() >= 300 || strlen($raw) > 1048576) {
                 throw new RuntimeException('Hub request failed.');
             }
-            $body = $response->json();
+            $body = json_decode($raw, true);
             if (! is_array($body)) {
                 // Streamable HTTP can return a JSON-RPC response in an SSE event.
-                foreach (preg_split('/\r?\n\r?\n/', $response->body()) as $event) {
+                foreach (preg_split('/\r?\n\r?\n/', $raw) as $event) {
                     $data = [];
                     foreach (preg_split('/\r?\n/', $event) as $line) {
-                        if (str_starts_with($line, 'data:')) {
+                        if (strpos($line, 'data:') === 0) {
                             $data[] = ltrim(substr($line, 5), ' ');
                         }
                     }

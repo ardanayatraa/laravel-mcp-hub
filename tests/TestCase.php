@@ -19,6 +19,16 @@ abstract class TestCase extends Orchestra
 
     protected function defineEnvironment($app): void
     {
+        $this->configureEnvironment($app);
+    }
+
+    protected function getEnvironmentSetUp($app)
+    {
+        $this->configureEnvironment($app);
+    }
+
+    private function configureEnvironment($app): void
+    {
         $app['config']->set('app.key', 'base64:'.base64_encode(str_repeat('t', 32)));
         $app['config']->set('database.default', 'testing');
         $app['config']->set('database.connections.testing', [
@@ -41,7 +51,7 @@ abstract class TestCase extends Orchestra
     {
         parent::setUp();
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
+            $table->bigIncrements('id');
             $table->string('name');
             $table->string('email');
             $table->string('password');
@@ -49,7 +59,7 @@ abstract class TestCase extends Orchestra
             $table->timestamps();
         });
         Schema::create('orders', function (Blueprint $table) {
-            $table->id();
+            $table->bigIncrements('id');
             $table->unsignedBigInteger('user_id');
             $table->string('title');
             $table->string('status');

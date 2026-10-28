@@ -13,13 +13,13 @@
         "source": "https://github.com/ardanayatraa/laravel-mcp-hub"
     },
     "require": {
-        "php": "^8.0.2",
-        "illuminate/console": "^9.0 || ^12.0",
-        "illuminate/contracts": "^9.0 || ^12.0",
-        "illuminate/database": "^9.0 || ^12.0",
-        "illuminate/http": "^9.0 || ^12.0",
-        "illuminate/support": "^9.0 || ^12.0",
-        "guzzlehttp/guzzle": "^7.2"
+        "php": "^7.2.5 || ^8.0",
+        "illuminate/console": "^5.8 || ^6.0 || ^7.0 || ^8.0 || ^9.0 || ^10.0 || ^11.0 || ^12.0 || ^13.0",
+        "illuminate/contracts": "^5.8 || ^6.0 || ^7.0 || ^8.0 || ^9.0 || ^10.0 || ^11.0 || ^12.0 || ^13.0",
+        "illuminate/database": "^5.8 || ^6.0 || ^7.0 || ^8.0 || ^9.0 || ^10.0 || ^11.0 || ^12.0 || ^13.0",
+        "illuminate/http": "^5.8 || ^6.0 || ^7.0 || ^8.0 || ^9.0 || ^10.0 || ^11.0 || ^12.0 || ^13.0",
+        "illuminate/support": "^5.8 || ^6.0 || ^7.0 || ^8.0 || ^9.0 || ^10.0 || ^11.0 || ^12.0 || ^13.0",
+        "guzzlehttp/guzzle": "^7.15.2"
     },
     "require-dev": {
         "orchestra/testbench": "^10.0",
@@ -39,7 +39,7 @@
         "test": "phpunit"
     },
     "archive": {
-        "exclude": ["/tests", "/postman", "/.github", "/phpunit.xml", "/.gitignore", "/.gitattributes", "/vendor", "/composer.lock", "/build", "/.phpunit.cache"]
+        "exclude": ["/tests", "/postman", "/scripts", "/.compat", "/.github", "/phpunit.xml", "/.gitignore", "/.gitattributes", "/vendor", "/composer.lock", "/build", "/.phpunit.cache"]
     },
     "config": {
         "sort-packages": true,

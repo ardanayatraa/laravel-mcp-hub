@@ -13,8 +13,13 @@ use Throwable;
 
 final class ConnectorController
 {
-    public function __construct(private Connection $connection, private Registry $registry)
+    private $connection;
+    private $registry;
+
+    public function __construct(Connection $connection, Registry $registry)
     {
+        $this->connection = $connection;
+        $this->registry = $registry;
     }
 
     public function health(Request $request)
@@ -88,13 +93,7 @@ final class ConnectorController
                         foreach ($definition['fields'] as $field => $type) {
                             $value = $model->getAttribute($field);
                             if ($value !== null) {
-                                $value = match ($type) {
-                                    'integer' => is_numeric($value) && (int) $value == $value ? (int) $value : throw new \RuntimeException(),
-                                    'number' => is_numeric($value) && is_finite((float) $value) ? (float) $value : throw new \RuntimeException(),
-                                    'boolean' => in_array($value, [true, false, 0, 1, '0', '1'], true) ? (bool) $value : throw new \RuntimeException(),
-                                    'datetime' => \Illuminate\Support\Carbon::parse($value)->toAtomString(),
-                                    default => is_scalar($value) && strlen((string) $value) <= 512 ? (string) $value : throw new \RuntimeException(),
-                                };
+                                $value = $this->presentValue($value, $type);
                             }
                             $row[$field] = $value;
                         }
@@ -119,6 +118,26 @@ final class ConnectorController
         return $this->connection->get('enabled') && strlen($key) >= 32
             && (! $this->connection->get('require_https') || $request->isSecure())
             && hash_equals($key, (string) $request->bearerToken());
+    }
+
+    private function presentValue($value, string $type)
+    {
+        if ($type === 'integer' && is_numeric($value) && (int) $value == $value) {
+            return (int) $value;
+        }
+        if ($type === 'number' && is_numeric($value) && is_finite((float) $value)) {
+            return (float) $value;
+        }
+        if ($type === 'boolean' && in_array($value, [true, false, 0, 1, '0', '1'], true)) {
+            return (bool) $value;
+        }
+        if ($type === 'datetime') {
+            return \Illuminate\Support\Carbon::parse($value)->toAtomString();
+        }
+        if ($type === 'string' && is_scalar($value) && strlen((string) $value) <= 512) {
+            return (string) $value;
+        }
+        throw new \RuntimeException('Resource field value is invalid.');
     }
 
     private function deny(int $status = 403)

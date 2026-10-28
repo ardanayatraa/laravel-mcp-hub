@@ -5,6 +5,7 @@ namespace McpHub\Laravel;
 use Illuminate\Database\Eloquent\Model;
 use McpHub\Laravel\Contracts\ResourcePolicy;
 use InvalidArgumentException;
+use McpHub\Laravel\Support\Json;
 
 class Registry
 {
@@ -28,7 +29,7 @@ class Registry
             foreach ($fields as $field => $type) {
                 if (! preg_match('/^[a-zA-Z][a-zA-Z0-9_]{0,62}$/D', $field)
                     || preg_match('/(?:email|phone|password|token|secret|otp|pin|cvv|cvc|card|passport|national|ssn|birth|iban|msisdn|verification|auth_code)/i', $field)
-                    || str_ends_with($field, '_id') || in_array($field, ['id', 'ref', 'tenant_id', 'count'], true)
+                    || substr($field, -3) === '_id' || in_array($field, ['id', 'ref', 'tenant_id', 'count'], true)
                     || in_array($field, $model->getHidden(), true)
                     || ! in_array($type, ['string', 'integer', 'number', 'boolean', 'datetime'], true)) {
                     throw new InvalidArgumentException('Resource field is not permitted.');
@@ -99,7 +100,7 @@ class Registry
                 'field_policies' => (object) [], 'max_page_size' => 50, 'read_endpoints' => $routes];
         }
         return ['contract_version' => '1.0', 'application' => $appKey, 'managed_by' => 'application',
-            'manifest_version' => substr(hash('sha256', json_encode($modules, JSON_THROW_ON_ERROR)), 0, 32),
+            'manifest_version' => substr(hash('sha256', Json::encode($modules)), 0, 32),
             'modules' => $modules];
     }
 }

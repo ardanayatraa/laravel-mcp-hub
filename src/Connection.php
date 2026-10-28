@@ -5,11 +5,17 @@ namespace McpHub\Laravel;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Encryption\Encrypter;
 use RuntimeException;
+use McpHub\Laravel\Support\Json;
 
 final class Connection
 {
-    public function __construct(private Repository $config, private Encrypter $encrypter)
+    private $config;
+    private $encrypter;
+
+    public function __construct(Repository $config, Encrypter $encrypter)
     {
+        $this->config = $config;
+        $this->encrypter = $encrypter;
     }
 
     public function get(string $key, $default = null)
@@ -29,7 +35,7 @@ final class Connection
         }
         $temporary = $file.'.'.bin2hex(random_bytes(8)).'.tmp';
         try {
-            $payload = $this->encrypter->encryptString(json_encode($values, JSON_THROW_ON_ERROR));
+            $payload = $this->encrypter->encryptString(Json::encode($values));
             if (file_put_contents($temporary, $payload, LOCK_EX) === false) {
                 throw new RuntimeException('Connection could not be saved.');
             }
@@ -50,7 +56,7 @@ final class Connection
         if (! is_file($file)) {
             return [];
         }
-        $values = json_decode($this->encrypter->decryptString(file_get_contents($file)), true, 16, JSON_THROW_ON_ERROR);
+        $values = Json::decode($this->encrypter->decryptString(file_get_contents($file)));
         if (! is_array($values)) {
             throw new RuntimeException('Connection storage is invalid.');
         }

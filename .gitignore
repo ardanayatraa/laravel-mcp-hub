@@ -1,6 +1,7 @@
 /vendor/
 /composer.lock
 /build/
+/.compat/
 /.phpunit.cache/
 /.phpunit.result.cache
 /.env

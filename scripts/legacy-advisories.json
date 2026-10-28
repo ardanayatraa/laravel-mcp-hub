@@ -1,0 +1,78 @@
+{
+    "PKSA-b41t-wbzk-9q51": {
+        "apply": "block",
+        "reason": "Isolated historical framework fixture only; not a security fix. Laravel TokenGuard authentication bypass through non-string API credentials"
+    },
+    "PKSA-4hy6-m98j-dz9f": {
+        "apply": "block",
+        "reason": "Isolated historical framework fixture only; not a security fix. Laravel relationship inclusion can trigger unauthorized data destruction"
+    },
+    "PKSA-d5tc-s1qs-h781": {
+        "apply": "block",
+        "reason": "Isolated historical framework fixture only; not a security fix. Laravel: XSS in Debug Page Information"
+    },
+    "PKSA-m5cs-t1y6-qpcs": {
+        "apply": "block",
+        "reason": "Isolated historical framework fixture only; not a security fix. Laravel Framework: Temporary Signed URL Path Confusion"
+    },
+    "PKSA-3r5d-mb8f-1qw9": {
+        "apply": "block",
+        "reason": "Isolated historical framework fixture only; not a security fix. Laravel Framework: CRLF injection in default email rule "
+    },
+    "PKSA-mdq4-51ck-6kdq": {
+        "apply": "block",
+        "reason": "Isolated historical framework fixture only; not a security fix. Laravel CRLF injection in default email rule"
+    },
+    "PKSA-8qx3-n5y5-vvnd": {
+        "apply": "block",
+        "reason": "Isolated historical framework fixture only; not a security fix. Laravel has a File Validation Bypass"
+    },
+    "PKSA-w7xr-vk7n-rstm": {
+        "apply": "block",
+        "reason": "Isolated historical framework fixture only; not a security fix. Laravel environment manipulation via query string"
+    },
+    "PKSA-dpt9-7cmv-dk65": {
+        "apply": "block",
+        "reason": "Isolated historical framework fixture only; not a security fix. Laravel Framework Deserialization Vulnerability"
+    },
+    "PKSA-7ywf-hktb-jkn9": {
+        "apply": "block",
+        "reason": "Isolated historical framework fixture only; not a security fix. Improper Input Validation in Laravel"
+    },
+    "PKSA-njrm-6dtg-m2pc": {
+        "apply": "block",
+        "reason": "Isolated historical framework fixture only; not a security fix. Possible cross-site scripting (XSS) vulnerability in the Blade templating engine"
+    },
+    "PKSA-nrj3-r2wg-yt8b": {
+        "apply": "block",
+        "reason": "Isolated historical framework fixture only; not a security fix. RCE vulnerability in \"cookie\" session driver"
+    },
+    "PKSA-w9tt-7782-78jx": {
+        "apply": "block",
+        "reason": "Isolated Laravel 5.8-8 filesystem fixture only; not a security fix. Flysystem: WhitespacePathNormalizer's control-character (CorruptedPathDetected) check is bypassed by malformed UTF-8 in the path, affecting every adapter"
+    },
+    "PKSA-365x-2zjk-pt47": {
+        "apply": "block",
+        "reason": "Isolated legacy Symfony 4 fixture only; not a security fix. CVE-2025-64500: Incorrect parsing of PATH_INFO can lead to limited authorization bypass"
+    },
+    "PKSA-b35n-565h-rs4q": {
+        "apply": "block",
+        "reason": "Isolated legacy Symfony 4 fixture only; not a security fix. CVE-2024-50345: Open redirect via browser-sanitized URLs"
+    },
+    "PKSA-wws7-mr54-jsny": {
+        "apply": "block",
+        "reason": "Isolated legacy Symfony 4 fixture only; not a security fix. CVE-2024-51736: Command execution hijack on Windows with Process class"
+    },
+    "PKSA-rkkf-636k-qjb3": {
+        "apply": "block",
+        "reason": "Isolated legacy Symfony fixture only; not a security fix. Symfony's incorrect argument escaping under MSYS2/Git Bash can lead to destructive file operations on Windows"
+    },
+    "PKSA-bf7t-jnpz-492k": {
+        "apply": "block",
+        "reason": "Isolated legacy Symfony fixture only; not a security fix. CVE-2026-48784: UrlGenerator Dot-Segment Encoding Skips Every Other Chained `../` or `./` \u2192 Generated URL Collapses Off-Route Under RFC 3986 Normalization"
+    },
+    "PKSA-yc7t-91v9-99xs": {
+        "apply": "block",
+        "reason": "Isolated legacy Symfony fixture only; not a security fix. CVE-2026-45065: UrlGenerator Route-Requirement Bypass via Unanchored Regex Alternation \u2192 Off-Site //host URL Injection"
+    }
+}

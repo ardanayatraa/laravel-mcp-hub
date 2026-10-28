@@ -7,6 +7,7 @@ use McpHub\Laravel\Connection;
 use McpHub\Laravel\HubClient;
 use McpHub\Laravel\Registry;
 use Throwable;
+use McpHub\Laravel\Support\Json;
 
 final class DoctorCommand extends Command
 {
@@ -30,7 +31,7 @@ final class DoctorCommand extends Command
             $checks['operation'] = false;
         }
         if ($this->option('json')) {
-            $this->line(json_encode(['checks' => $checks, 'ok' => ! in_array(false, $checks, true)], JSON_THROW_ON_ERROR));
+            $this->line(Json::encode(['checks' => $checks, 'ok' => ! in_array(false, $checks, true)]));
         } else {
             foreach ($checks as $name => $ok) {
                 $this->line($name.': '.($ok ? 'OK' : 'FAIL'));

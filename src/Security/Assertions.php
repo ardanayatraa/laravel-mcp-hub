@@ -7,11 +7,19 @@ use Illuminate\Contracts\Cache\Repository;
 use McpHub\Laravel\Connection;
 use McpHub\Laravel\Contracts\ActorResolver;
 use RuntimeException;
+use McpHub\Laravel\Support\Json;
 
 final class Assertions
 {
-    public function __construct(private Connection $connection, private ActorResolver $resolver, private Repository $cache)
+    private $connection;
+    private $resolver;
+    private $cache;
+
+    public function __construct(Connection $connection, ActorResolver $resolver, Repository $cache)
     {
+        $this->connection = $connection;
+        $this->resolver = $resolver;
+        $this->cache = $cache;
     }
 
     public function delegate(Authenticatable $user): string
@@ -35,7 +43,7 @@ final class Assertions
         if (! hash_equals(hash_hmac('sha256', $json, $this->secret(), true), $this->decode($signature))) {
             throw new RuntimeException('Actor access denied.');
         }
-        $claims = json_decode($json, true, 8, JSON_THROW_ON_ERROR);
+        $claims = Json::decode($json, 8);
         if (! is_array($claims) || ($claims['app_key'] ?? null) !== $this->connection->get('app_key')
             || ($claims['aud'] ?? null) !== $this->connection->get('source_url')
             || ! is_int($claims['exp'] ?? null) || $claims['exp'] <= time() || $claims['exp'] > time() + 150
@@ -56,7 +64,7 @@ final class Assertions
 
     private function sign(array $claims): string
     {
-        $json = json_encode($claims, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+        $json = Json::encode($claims, JSON_UNESCAPED_SLASHES);
         return $this->encode($json).'.'.$this->encode(hash_hmac('sha256', $json, $this->secret(), true));
     }
 
