@@ -1,0 +1,12 @@
+/vendor/
+/composer.lock
+/build/
+/.phpunit.cache/
+/.phpunit.result.cache
+/.env
+/.env.*
+!/.env.example
+/auth.json
+*.log
+*.enc
+*.sqlite*

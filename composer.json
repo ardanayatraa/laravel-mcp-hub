@@ -1,0 +1,51 @@
+{
+    "name": "ardanayatraa/laravel-mcp-hub",
+    "description": "Application-owned Laravel source APIs and a scoped MCP Hub client.",
+    "keywords": ["laravel", "mcp", "model-context-protocol", "connector", "ai"],
+    "type": "library",
+    "license": "MIT",
+    "homepage": "https://github.com/ardanayatraa/laravel-mcp-hub",
+    "authors": [
+        {"name": "Ardana Yatra", "homepage": "https://github.com/ardanayatraa"}
+    ],
+    "support": {
+        "issues": "https://github.com/ardanayatraa/laravel-mcp-hub/issues",
+        "source": "https://github.com/ardanayatraa/laravel-mcp-hub"
+    },
+    "require": {
+        "php": "^8.0.2",
+        "illuminate/console": "^9.0 || ^12.0",
+        "illuminate/contracts": "^9.0 || ^12.0",
+        "illuminate/database": "^9.0 || ^12.0",
+        "illuminate/http": "^9.0 || ^12.0",
+        "illuminate/support": "^9.0 || ^12.0",
+        "guzzlehttp/guzzle": "^7.2"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^10.0",
+        "phpunit/phpunit": "^11.5",
+        "mockery/mockery": "^1.6"
+    },
+    "autoload": {
+        "psr-4": {"McpHub\\Laravel\\": "src/"}
+    },
+    "autoload-dev": {
+        "psr-4": {"McpHub\\Laravel\\Tests\\": "tests/"}
+    },
+    "extra": {
+        "laravel": {"providers": ["McpHub\\Laravel\\McpHubServiceProvider"]}
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
+    "archive": {
+        "exclude": ["/tests", "/postman", "/.github", "/phpunit.xml", "/.gitignore", "/.gitattributes", "/vendor", "/composer.lock", "/build", "/.phpunit.cache"]
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "php-http/discovery": false,
+            "phpstan/extension-installer": false
+        }
+    }
+}

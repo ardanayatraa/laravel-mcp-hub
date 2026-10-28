@@ -1,0 +1,6 @@
+simulation: laravel-mcp-hub
+routing: path
+mocks:
+  - name: local-hub-contract
+    routeKey: hub
+    path: postman/mocks/hub
