@@ -2,25 +2,34 @@
 
 Expose reviewed Laravel resources to an MCP Hub and call the Hub through a scoped server-side client. Applications retain control of business data, account identity, record ownership, and permissions.
 
-**Alpha release:** 0.1.0-alpha.1. The generic connector is tested on Laravel 12. Its Hub transport has also been exercised in an existing Laravel 9 application. Laravel 5.8–8, 10–11, and 13 are not currently supported by the Composer constraints. Compatibility with future major versions is not implied.
+**Alpha release:** 0.2.0-alpha.1. One package supports Laravel 5.8, 6, 7, 8, 9, 10, 11, 12 and 13. The package requires PHP 7.2.5 or later in the PHP 7/8 families; the framework and the application's other dependencies determine the effective PHP requirement.
+
+| Laravel reference | PHP tested in CI |
+|---|---|
+| 5.8.38 | 7.2, 7.4 |
+| 6.20.45 | 7.2 |
+| 7.30.7 | 7.2 |
+| 8.83.29 | 7.3 |
+| 9.52.21 | 8.0, 8.2 |
+| 10.50.4 | 8.1 |
+| 11.45.0 | 8.2 |
+| 12.64.0 | 8.2, 8.4 |
+| 13.38.0 | 8.3, 8.4 |
+
+The matrix checks reference patches for every supported major, not every historical patch or every possible PHP/framework combination. Use the latest compatible framework patch where possible. Future Laravel majors will be added after compatibility testing; support is not open-ended.
 
 There are **no business models registered by default**.
 
 ## Install
 
 ~~~bash
-composer require ardanayatraa/laravel-mcp-hub:0.1.0-alpha.1
+composer require ardanayatraa/laravel-mcp-hub:0.2.0-alpha.1
 php artisan mcp-hub:install
 ~~~
 
-If Packagist indexing is pending, configure the public VCS repository first:
-
-~~~bash
-composer config repositories.laravel-mcp-hub vcs https://github.com/ardanayatraa/laravel-mcp-hub
-composer require ardanayatraa/laravel-mcp-hub:0.1.0-alpha.1
-~~~
-
 Laravel discovers the provider automatically unless the application disables package discovery. The installer publishes config/mcp-hub.php only when it does not already exist. It does not overwrite application files, run application migrations, create a Hub account, grant data access, or rotate credentials.
+
+Version 0.2 keeps the 0.1 configuration keys, contracts and source API. It uses Guzzle 7.15.2 or newer directly so older Laravel applications do not need Laravel's newer HTTP facade. An application pinned to Guzzle 6 must resolve that dependency before installation. No business model is mandatory.
 
 ## Configure a connection
 
@@ -131,7 +140,16 @@ composer test
 composer validate --strict
 ~~~
 
-The standalone Testbench suite uses Laravel 12 and an isolated in-memory SQLite database. CI runs that suite on PHP 8.2, 8.3, and 8.4. Laravel 9 integration has separate local evidence; fresh Laravel 9 resolution is blocked by framework security advisories. No security or platform checks are disabled by this repository.
+The default development install uses Laravel 12. The same Testbench suite runs across the matrix above with isolated SQLite databases. To reproduce a matrix row using its real PHP runtime:
+
+~~~bash
+php scripts/prepare-matrix.php 5.8
+composer update --working-dir=.compat/5.8 --prefer-dist
+composer check-platform-reqs --working-dir=.compat/5.8
+php .compat/5.8/vendor/bin/phpunit --bootstrap .compat/5.8/vendor/autoload.php
+~~~
+
+Historical frameworks include known upstream security advisories. Only the generated .compat development fixtures contain explicit advisory-ID exceptions from scripts/legacy-advisories.json. Exceptions allow resolution for testing and keep findings visible in audit output. CI stores the complete audit and dependency lock, and fails on unreviewed advisories. The published runtime manifest does not disable security blocking, change application settings, or ignore platform requirements. Connector compatibility does not restore security maintenance for old frameworks.
 
 For an actual HTTP transport check, start the local Postman simulation:
 
