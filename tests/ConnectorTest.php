@@ -9,6 +9,7 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
+use Illuminate\Support\Facades\Artisan;
 use McpHub\Laravel\Connection;
 use McpHub\Laravel\HubClient;
 
@@ -172,6 +173,30 @@ class ConnectorTest extends TestCase
             $this->assertSame('storage-canary', app(Connection::class)->get('client_key'));
         } finally {
             $this->app->useStoragePath($original);
+        }
+    }
+
+    public function test_commands_keep_application_config_and_do_not_print_credentials(): void
+    {
+        $target = config_path('mcp-hub.php');
+        $original = is_file($target) ? file_get_contents($target) : null;
+        $canary = "<?php\nreturn ['application_config_canary' => true];\n";
+        file_put_contents($target, $canary);
+        try {
+            $this->assertSame(0, Artisan::call('mcp-hub:install'));
+            $this->assertSame($canary, file_get_contents($target));
+            config(['mcp-hub.environment' => 'testing']);
+            $this->assertSame(0, Artisan::call('mcp-hub:connect', ['--import-env' => true, '--dry-run' => true]));
+            $this->assertStringNotContainsString($this->token, Artisan::output());
+            $this->assertSame(0, Artisan::call('mcp-hub:doctor', ['--json' => true]));
+            $this->assertTrue(json_decode(Artisan::output(), true)['ok']);
+            $this->assertStringNotContainsString($this->secret, Artisan::output());
+        } finally {
+            if ($original === null) {
+                unlink($target);
+            } else {
+                file_put_contents($target, $original);
+            }
         }
     }
 

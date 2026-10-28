@@ -54,6 +54,7 @@ jobs:
         if: always()
         with:
           name: laravel-${{ matrix.laravel }}-php-${{ matrix.php }}
+          include-hidden-files: true
           path: |
             .compat/results.xml
             .compat/audit.json
