@@ -23,9 +23,11 @@ There are **no business models registered by default**.
 ## Install
 
 ~~~bash
-composer require ardanayatraa/laravel-mcp-hub:0.2.0-alpha.1
+composer require ardanayatraa/laravel-mcp-hub:@alpha
 php artisan mcp-hub:install
 ~~~
+
+No package version number is needed: Composer resolves a compatible release using the project's PHP and Laravel dependency constraints. The @alpha flag allows the current preview releases without changing the project's global minimum stability. It can be omitted once a compatible stable release is available. Composer package names require the vendor/package form.
 
 Laravel discovers the provider automatically unless the application disables package discovery. The installer publishes config/mcp-hub.php only when it does not already exist. It does not overwrite application files, run application migrations, create a Hub account, grant data access, or rotate credentials.
 
