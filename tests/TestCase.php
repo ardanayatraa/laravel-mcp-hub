@@ -47,9 +47,17 @@ abstract class TestCase extends Orchestra
         $app['config']->set('mcp-hub-test.models', $models);
     }
 
+    protected function recordRef(int $user, $record): string
+    {
+        $actor = app(\McpHub\Laravel\Contracts\ActorResolver::class)->forUser(\McpHub\Laravel\Tests\Fixtures\User::query()->findOrFail($user));
+        return app(\McpHub\Laravel\Security\RecordReferences::class)->encode('orders', $actor, $record);
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
+        require_once __DIR__.'/../database/migrations/2026_10_29_000002_create_mcp_hub_nonces_table.php';
+        (new \CreateMcpHubNoncesTable())->up();
         Schema::create('users', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name');

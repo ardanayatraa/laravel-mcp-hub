@@ -2,9 +2,7 @@
 
 namespace McpHub\Laravel;
 
-use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
-use McpHub\Laravel\Support\Json;
 use RuntimeException;
 use Throwable;
 
@@ -12,12 +10,12 @@ final class HubClient
 {
     private $requestId = 0;
     private $connection;
-    private $http;
+    private $transport;
 
     public function __construct(Connection $connection, ?ClientInterface $http = null)
     {
         $this->connection = $connection;
-        $this->http = $http ?: new Client();
+        $this->transport = new HubTransport($connection, $http);
     }
 
     public function rpc(string $method, array $params = [], array $headers = []): array
@@ -25,16 +23,14 @@ final class HubClient
         if (! in_array($method, ['tools/list', 'tools/call'], true)) {
             throw new RuntimeException('Unsupported Hub operation.');
         }
-        $url = (string) $this->connection->get('url', '');
-        $token = (string) $this->connection->get('client_key', '');
-        $parts = parse_url($url);
-        $local = app()->environment(['local', 'testing']) && in_array(strtolower($parts['host'] ?? ''),
-            ['localhost', '127.0.0.1', '::1'], true);
-        if (! $this->connection->get('enabled') || $token === '' || ! is_array($parts)
-            || empty($parts['host']) || (($parts['scheme'] ?? '') !== 'https'
-                && !(($parts['scheme'] ?? '') === 'http' && $local))
-            || isset($parts['user']) || isset($parts['pass']) || isset($parts['query']) || isset($parts['fragment'])) {
-            throw new RuntimeException('MCP Hub connection is not configured.');
+        if ($method === 'tools/call') {
+            $arguments = $params['arguments'] ?? [];
+            if (! is_string($params['name'] ?? null) || ! preg_match('/^[a-zA-Z0-9_.-]{1,128}$/D', $params['name'])
+                || ! is_array($arguments) || array_filter(array_keys($arguments), 'is_int')) {
+                throw new RuntimeException('Invalid Hub tool call.');
+            }
+            // PHP's empty array encodes as [], while MCP requires an object here.
+            $params['arguments'] = $arguments === [] ? new \stdClass() : $arguments;
         }
         $version = (string) $this->connection->get('protocol_version');
         $params['_meta'] = ['io.modelcontextprotocol/protocolVersion' => $version,
@@ -50,17 +46,8 @@ final class HubClient
             $safeHeaders['X-Hub-Delegation'] = $headers['X-Hub-Delegation'];
         }
         try {
-            $safeHeaders['Authorization'] = 'Bearer '.$token;
-            $response = $this->http->request('POST', $url, [
-                'headers' => $safeHeaders, 'allow_redirects' => false, 'http_errors' => false,
-                'connect_timeout' => 3, 'timeout' => max(1, min(120, (int) $this->connection->get('timeout', 12))),
-                'body' => Json::encode(['jsonrpc' => '2.0', 'id' => ++$this->requestId, 'method' => $method,
-                    'params' => $params === [] ? new \stdClass() : $params]),
-            ]);
-            $raw = $response->getBody()->read(1048577);
-            if ($response->getStatusCode() < 200 || $response->getStatusCode() >= 300 || strlen($raw) > 1048576) {
-                throw new RuntimeException('Hub request failed.');
-            }
+            $raw = $this->transport->send('POST', '', ['jsonrpc' => '2.0', 'id' => ++$this->requestId,
+                'method' => $method, 'params' => $params === [] ? new \stdClass() : $params], $safeHeaders);
             $body = json_decode($raw, true);
             if (! is_array($body)) {
                 // Streamable HTTP can return a JSON-RPC response in an SSE event.
@@ -78,13 +65,16 @@ final class HubClient
                     }
                 }
             }
-            if (! is_array($body) || ($body['id'] ?? null) !== $this->requestId
+            if (! is_array($body) || ($body['jsonrpc'] ?? null) !== '2.0' || ($body['id'] ?? null) !== $this->requestId
                 || isset($body['error']) || ! is_array($body['result'] ?? null)) {
                 throw new RuntimeException('Invalid Hub response.');
             }
             return $body['result'];
         } catch (Throwable $error) {
             // Upstream errors may contain credentials or business data.
+            if ($error instanceof RuntimeException && $error->getMessage() === 'MCP Hub connection is not configured.') {
+                throw $error;
+            }
             throw new RuntimeException('MCP Hub request failed.');
         }
     }

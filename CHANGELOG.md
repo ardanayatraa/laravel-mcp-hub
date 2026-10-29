@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+- Add source-bound one-use pairing, encrypted resumable installation proof, scoped sync/status/disconnect and replacement support.
+- Add transactional CRUD proposals, canonical previews, application session/CSRF approval, version/scope revalidation and idempotent status receipts.
+- Replace cache-only replay checks with durable SQL uniqueness; add opaque actor/tenant/source/environment-bound record references.
+- Add protected application settings/chat, a scoped Gateway SDK, bounded transport, safe errors and English/Indonesian approval pages.
+- Add metadata-only resource discovery, a disabled resource generator, package-only migration previews and shared Doctor checks.
+- Register hourly package metadata pruning through the host Laravel scheduler and refuse source readiness when required security metadata is absent.
+- Keep every business model and business permission application-owned, with empty package defaults.
+- Add private queued CSV/XLSX/PDF reports, bounded grouped metrics, encrypted artifacts, expiry and current actor/policy/record checks on download.
+- Build chat download links from validated source references; neutralize spreadsheet formulas and disable PDF remote resources, PHP and JavaScript.
+- Validate generated tool/input limits and private enum choices before manifest publication; run only package migration files without restoring an application schema dump.
+- Add native PostgreSQL race checks and upgrade/recovery guidance. The local thirteen-row matrix passed; final hosted CI and release review still gate stable publication.
+
 ## 0.2.0-alpha.1 - 2026-10-28
 
 - Retain legacy support in the same Composer package across Laravel 5.8 through 13.

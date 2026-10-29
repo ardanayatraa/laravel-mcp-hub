@@ -3,10 +3,6 @@
 namespace McpHub\Laravel\Console;
 
 use Illuminate\Console\Command;
-use McpHub\Laravel\Connection;
-use McpHub\Laravel\HubClient;
-use McpHub\Laravel\Registry;
-use Throwable;
 use McpHub\Laravel\Support\Json;
 
 final class DoctorCommand extends Command
@@ -14,22 +10,10 @@ final class DoctorCommand extends Command
     protected $signature = 'mcp-hub:doctor {--online} {--json}';
     protected $description = 'Check configuration and optionally list Hub tools without reading records';
 
-    public function handle(Connection $connection, Registry $registry, HubClient $client): int
+    public function handle(): int
     {
-        $checks = [];
-        try {
-            $checks['application_key'] = preg_match('/^[a-z][a-z0-9_]{0,62}$/D', (string) $connection->get('app_key')) === 1;
-            $checks['app_token'] = strlen((string) $connection->get('app_token')) >= 32;
-            $checks['delegation_secret'] = strlen((string) $connection->get('delegation_secret')) >= 32;
-            $checks['client_key'] = (string) $connection->get('client_key') !== '';
-            $checks['manifest'] = is_array($registry->manifest($connection));
-            $checks['shared_cache'] = app()->environment(['local', 'testing']) || ! in_array(config('cache.default'), ['array', 'null'], true);
-            if ($this->option('online')) {
-                $checks['hub_tools'] = is_array($client->rpc('tools/list')['tools'] ?? null);
-            }
-        } catch (Throwable $error) {
-            $checks['operation'] = false;
-        }
+        $result = app(\McpHub\Laravel\Doctor::class)->inspect((bool) $this->option('online'));
+        $checks = $result['checks'];
         if ($this->option('json')) {
             $this->line(Json::encode(['checks' => $checks, 'ok' => ! in_array(false, $checks, true)]));
         } else {

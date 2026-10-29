@@ -3,7 +3,6 @@
 namespace McpHub\Laravel\Security;
 
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Contracts\Cache\Repository;
 use McpHub\Laravel\Connection;
 use McpHub\Laravel\Contracts\ActorResolver;
 use RuntimeException;
@@ -13,13 +12,13 @@ final class Assertions
 {
     private $connection;
     private $resolver;
-    private $cache;
+    private $nonces;
 
-    public function __construct(Connection $connection, ActorResolver $resolver, Repository $cache)
+    public function __construct(Connection $connection, ActorResolver $resolver, NonceStore $nonces)
     {
         $this->connection = $connection;
         $this->resolver = $resolver;
-        $this->cache = $cache;
+        $this->nonces = $nonces;
     }
 
     public function delegate(Authenticatable $user): string
@@ -32,9 +31,6 @@ final class Assertions
 
     public function verify(string $token): Actor
     {
-        if (! app()->environment(['local', 'testing']) && in_array(config('cache.default'), ['array', 'null'], true)) {
-            throw new RuntimeException('Shared atomic cache is required for actor verification.');
-        }
         if (strlen($token) > 4096 || substr_count($token, '.') !== 1) {
             throw new RuntimeException('Actor access denied.');
         }
@@ -55,10 +51,8 @@ final class Assertions
         if ($actor->reference !== $claims['user_ref'] || $actor->tenant !== $claims['tenant_id']) {
             throw new RuntimeException('Actor access denied.');
         }
-        $nonce = 'mcp-hub.assertion.'.hash('sha256', $claims['app_key'].'|'.$claims['jti']);
-        if (! $this->cache->add($nonce, true, $claims['exp'] - time() + 5)) {
-            throw new RuntimeException('Actor access denied.');
-        }
+        $nonce = hash('sha256', $claims['app_key'].'|'.$claims['jti']);
+        $this->nonces->consume($nonce, $claims['exp'] + 5);
         return $actor;
     }
 

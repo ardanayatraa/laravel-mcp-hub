@@ -2,7 +2,7 @@
 
 Expose reviewed Laravel resources to an MCP Hub and call the Hub through a scoped server-side client. Applications retain control of business data, account identity, record ownership, and permissions.
 
-**Alpha release:** 0.2.0-alpha.1. One package supports Laravel 5.8, 6, 7, 8, 9, 10, 11, 12 and 13. The package requires PHP 7.2.5 or later in the PHP 7/8 families; the framework and the application's other dependencies determine the effective PHP requirement.
+**Published alpha:** 0.2.0-alpha.1. This development branch adds pairing, CRUD proposals, settings/chat and a Gateway SDK; see [unreleased features and setup](DEVELOPMENT.md). A stable release has not been published. One package supports Laravel 5.8, 6, 7, 8, 9, 10, 11, 12 and 13. The package requires PHP 7.2.5 or later in the PHP 7/8 families; the framework and the application's other dependencies determine the effective PHP requirement.
 
 | Laravel reference | PHP tested in CI |
 |---|---|
@@ -105,7 +105,7 @@ The default prefix is /api/ai/v1:
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET | /health | Service-authenticated health |
+| GET | /health | Service-authenticated health; development code also checks required security metadata |
 | GET | /capabilities | Application-managed Connector Contract 1.0 manifest |
 | GET | /{resource}/list | Authorized, paginated records |
 | GET | /{resource}/get | Exact lookup using the registered field |
@@ -113,11 +113,11 @@ The default prefix is /api/ai/v1:
 
 All routes require the configured bearer app token. Reads additionally require a signed X-Hub-Assertion carrying the approved app key, audience, active user reference, tenant, expiry, and one-use jti.
 
-Production needs a shared cache with atomic add for replay rejection. In-memory array/null caches are refused for actor verification outside local/testing. Source responses are marked no-store.
+Development code uses durable SQL nonce uniqueness for replay rejection, including across workers and cache flushes. Run the package migrations first. Source responses are marked no-store. The published alpha uses its earlier cache-backed replay implementation.
 
 If the application already owns these routes, set routes.enabled to false and adapt its existing source registry and gateway rather than registering duplicate endpoints.
 
-The generic alpha exposes reads only. Application-specific write proposals, confirmations, chat UI, report exports, provider credentials and business rules are outside this package.
+The published alpha exposes reads only. The [development features](DEVELOPMENT.md) add application-owned write proposals, protected settings/chat and a scoped Gateway SDK. [Private report exports](EXPORTS.md) add bounded CSV/XLSX/PDF jobs with authenticated downloads. Business rules remain in the host application; provider credentials remain at the Hub.
 
 ## Hub transport
 

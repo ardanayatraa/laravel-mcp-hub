@@ -15,6 +15,38 @@ use McpHub\Laravel\HubClient;
 
 class ConnectorTest extends TestCase
 {
+    public function test_generated_tool_keys_follow_the_hub_limit_without_silent_renaming(): void
+    {
+        config(['mcp-hub.app_key' => str_repeat('a', 63)]);
+        $registry = app(\McpHub\Laravel\Registry::class);
+        $manifest = $registry->manifest(app(\McpHub\Laravel\Connection::class));
+        $this->assertSame(str_repeat('a', 63).'.orders.list', $manifest['modules'][0]['read_endpoints'][0]['tool_key']);
+        config(['mcp-hub.exports.enabled' => true, 'mcp-hub.models.orders.exports' => ['csv']]);
+        $this->expectException(\InvalidArgumentException::class);
+        $registry->manifest(app(\McpHub\Laravel\Connection::class));
+    }
+
+    public function test_read_filter_schemas_are_bounded_before_hub_discovery(): void
+    {
+        config(['mcp-hub.app_key' => 'your_app']);
+        $fields = $filters = [];
+        for ($index = 0; $index < 30; ++$index) {
+            $fields['field'.$index] = 'string';
+            $filters['field'.$index] = ['reviewed'];
+        }
+        config(['mcp-hub.models.orders.fields' => $fields, 'mcp-hub.models.orders.filters' => $filters,
+            'mcp-hub.models.orders.lookup' => null]);
+        $this->expectException(\InvalidArgumentException::class);
+        app(\McpHub\Laravel\Registry::class)->manifest(app(\McpHub\Laravel\Connection::class));
+    }
+
+    public function test_private_filter_choices_are_not_published_in_metadata(): void
+    {
+        config(['mcp-hub.app_key' => 'your_app', 'mcp-hub.models.orders.filters.status' => ['person@example.test']]);
+        $this->expectException(\RuntimeException::class);
+        app(\McpHub\Laravel\Registry::class)->manifest(app(\McpHub\Laravel\Connection::class));
+    }
+
 
     private $token = 'dummy-source-token-at-least-32-characters';
     private $secret = 'dummy-delegation-secret-at-least-32-characters';
@@ -57,6 +89,18 @@ class ConnectorTest extends TestCase
         $this->assertSame('your_app.orders.list', $response->json()['modules'][0]['read_endpoints'][0]['tool_key']);
         $this->assertStringNotContainsString('private_note', $response->getContent());
         $this->assertStringNotContainsString('private-canary', $response->getContent());
+    }
+
+    public function test_readiness_refuses_missing_replay_or_enabled_command_metadata(): void
+    {
+        $this->withHeaders(['Authorization' => 'Bearer '.$this->token]);
+        config(['mcp-hub.commands.enabled' => true]);
+        $this->getJson('/api/ai/v1/health')->assertStatus(503)->assertJson(['status' => 'not_ready']);
+        config(['mcp-hub.commands.enabled' => false]);
+        $this->getJson('/api/ai/v1/health')->assertStatus(200);
+        \Illuminate\Support\Facades\Schema::drop('mcp_hub_nonces');
+        $this->getJson('/api/ai/v1/health')->assertStatus(503)->assertJson(['checks' => ['replay_metadata' => false]]);
+        $this->withHeaders(['Authorization' => 'Bearer invalid'])->getJson('/api/ai/v1/health')->assertStatus(401);
     }
 
     public function test_source_reads_only_the_current_actors_records(): void
@@ -147,6 +191,17 @@ class ConnectorTest extends TestCase
         $client->rpc('tools/list');
     }
 
+    public function test_empty_tool_arguments_use_a_json_object_over_http(): void
+    {
+        $history = [];
+        $client = $this->clientWithResponses([new Response(200, [], json_encode([
+            'jsonrpc' => '2.0', 'id' => 1, 'result' => ['content' => []],
+        ]))], $history);
+        $client->rpc('tools/call', ['name' => 'your_app__orders__list', 'arguments' => []]);
+        $sent = json_decode((string) $history[0]['request']->getBody());
+        $this->assertInstanceOf(\stdClass::class, $sent->params->arguments);
+    }
+
     public function test_transport_reads_sse_and_sanitizes_upstream_errors(): void
     {
         $history = [];
@@ -201,10 +256,11 @@ class ConnectorTest extends TestCase
     }
 
 
-    public function test_production_rejects_an_in_memory_replay_cache(): void
+    public function test_missing_shared_replay_metadata_fails_closed(): void
     {
         $this->app['env'] = 'production';
         config(['cache.default' => 'array']);
+        \Illuminate\Support\Facades\Schema::drop('mcp_hub_nonces');
         $this->read(1)->assertStatus(403);
     }
 

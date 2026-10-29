@@ -1,0 +1,36 @@
+<?php
+
+namespace {{namespace}};
+
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use McpHub\Laravel\Contracts\WritePolicy;
+use McpHub\Laravel\Security\Actor;
+use RuntimeException;
+
+final class {{class}}Policy implements WritePolicy
+{
+    public function allows(Actor $actor, string $resource, string $action): bool
+    {
+        // Implement the application's own permission and active-account rules.
+        return false;
+    }
+
+    public function scope(Builder $query, Actor $actor): Builder
+    {
+        // Replace with the application's complete row and tenant restrictions.
+        return $query->whereRaw('1 = 0');
+    }
+
+    public function validate(Actor $actor, string $resource, string $operation, array $input, ?Model $record): array
+    {
+        // Validate business rules and return exact, canonical values for approval.
+        throw new RuntimeException('Application write rules have not been implemented.');
+    }
+
+    public function createAttributes(Actor $actor, string $resource): array
+    {
+        // Return server-owned ownership/default values; never copy them from AI input.
+        throw new RuntimeException('Application ownership rules have not been implemented.');
+    }
+}

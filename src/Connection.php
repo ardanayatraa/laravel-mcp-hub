@@ -21,10 +21,62 @@ final class Connection
     public function get(string $key, $default = null)
     {
         $value = $this->config->get('mcp-hub.'.$key);
+        if ($key === 'enabled') {
+            $saved = $this->saved();
+            if ($value === false || ($saved['enabled'] ?? null) === false
+                || ($value !== null && ! is_bool($value))) {
+                return false;
+            }
+            return $value === true || ($saved['enabled'] ?? null) === true || (string) $this->get('url', '') !== '';
+        }
         if ($value !== null && $value !== '') {
             return $value;
         }
-        return $this->saved()[$key] ?? $default;
+        $saved = $this->saved();
+        if (array_key_exists($key, $saved)) {
+            return $saved[$key];
+        }
+        if ($key === 'environment') {
+            return config('app.env', 'local');
+        }
+        return $default;
+    }
+
+    public function update(array $values): void
+    {
+        $this->locked('connection', function () use ($values) {
+            $this->save(array_replace($this->saved(), $values));
+        });
+    }
+
+    public function stored(): array
+    {
+        return $this->saved();
+    }
+
+    public function locked(string $name, callable $callback)
+    {
+        if (! in_array($name, ['connection', 'pairing'], true)) {
+            throw new RuntimeException('Invalid connection lock.');
+        }
+        $directory = storage_path('app/mcp-hub');
+        if (! is_dir($directory) && ! mkdir($directory, 0700, true) && ! is_dir($directory)) {
+            throw new RuntimeException('Connection storage is unavailable.');
+        }
+        $lock = fopen($directory.'/'.$name.'.lock', 'c');
+        if ($lock === false) {
+            throw new RuntimeException('Connection lock is unavailable.');
+        }
+        chmod($directory.'/'.$name.'.lock', 0600);
+        try {
+            if (! flock($lock, LOCK_EX | LOCK_NB)) {
+                throw new RuntimeException('Another connection operation is in progress.');
+            }
+            return $callback();
+        } finally {
+            flock($lock, LOCK_UN);
+            fclose($lock);
+        }
     }
 
     public function save(array $values): void
