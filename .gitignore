@@ -11,3 +11,23 @@
 *.log
 *.enc
 *.sqlite*
+
+# Local secrets, machine state and generated fixtures.
+**/.env
+**/.env.*
+!**/.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+node_modules/
+/.verification/
+/.worktrees/
+/.worktree/
+/worktrees/
+/.codex/
+/.agents/
+/.aws/
+/.ssh/
