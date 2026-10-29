@@ -1,0 +1,6 @@
+simulation: laravel-mcp-hub-stable-e2e
+routing: path
+mocks:
+  - name: isolated-model-provider
+    routeKey: provider
+    path: postman/mocks/provider

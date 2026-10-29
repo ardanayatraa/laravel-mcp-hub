@@ -4,17 +4,35 @@ namespace McpHub\Laravel\Console;
 
 use Illuminate\Console\Command;
 use McpHub\Laravel\Connection;
+use McpHub\Laravel\Pairing;
 use Throwable;
 
 final class ConnectCommand extends Command
 {
-    protected $signature = 'mcp-hub:connect {--import-env : Save an already provisioned connection} {--dry-run}';
-    protected $description = 'Import existing Hub credentials without changing grants or rotating keys';
+    protected $signature = 'mcp-hub:connect {--import-env : Save an already provisioned connection} {--hub= : Hub URL} {--code= : One-use enrollment code} {--resume : Resume the saved enrollment} {--replace : Install an administrator-issued replacement for this connection} {--dry-run}';
+    protected $description = 'Pair once with the Hub or import an existing connection';
 
-    public function handle(Connection $connection): int
+    public function handle(Connection $connection, Pairing $pairing): int
     {
+        if ($this->option('resume') || $this->option('hub')) {
+            try {
+                if ($this->option('resume') && $this->option('dry-run')) {
+                    $this->line('Would resume the saved enrollment; no changes made.');
+                    return 0;
+                }
+                $code = (string) ($this->option('code') ?: ($this->option('resume') ? '' : $this->secret('One-use pairing code')));
+                $status = $this->option('resume') ? $pairing->resume()
+                    : $pairing->connect((string) $this->option('hub'), $code, (bool) $this->option('dry-run'), (bool) $this->option('replace'));
+                $this->info($status['status'] === 'active' ? 'Hub connection is active.'
+                    : 'Pairing inputs are valid; no changes made.');
+                return 0;
+            } catch (Throwable $error) {
+                $this->error('Pairing did not complete. Credentials were not printed. Check configuration, then use --resume.');
+                return 1;
+            }
+        }
         if (! $this->option('import-env')) {
-            $this->error('This alpha uses existing Hub provisioning. Set MCP_HUB_* and pass --import-env.');
+            $this->error('Use --hub=<Hub URL> to pair, or --import-env for existing credentials.');
             return 2;
         }
         try {

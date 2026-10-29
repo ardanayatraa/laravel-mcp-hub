@@ -9,6 +9,47 @@ permissions:
   contents: read
 
 jobs:
+  assets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/check-chat.js
+  native-postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: mcp_package_test
+          POSTGRES_USER: mcp_test
+          POSTGRES_PASSWORD: fixture-password-not-for-production
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U mcp_test -d mcp_package_test"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      MCP_HUB_TEST_PG_DATABASE: mcp_package_test
+      MCP_HUB_TEST_PG_USER: mcp_test
+      MCP_HUB_TEST_PG_PASSWORD: fixture-password-not-for-production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_sqlite, pdo_pgsql, dom, mbstring
+          coverage: none
+          tools: composer:2.9.8
+      - run: composer install --no-interaction --no-progress
+      - run: php vendor/bin/phpunit --filter NativeDatabaseTest --log-junit build/native-postgres.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-postgres
+          path: build/native-postgres.xml
   tests:
     name: Laravel ${{ matrix.laravel }} / PHP ${{ matrix.php }}
     runs-on: ubuntu-latest
@@ -34,7 +75,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: pdo_sqlite
+          extensions: pdo_sqlite, dom, mbstring
           coverage: none
           tools: composer:2.9.8
       - run: composer validate --strict

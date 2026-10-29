@@ -24,7 +24,12 @@ final class ConnectorController
 
     public function health(Request $request)
     {
-        return $this->authenticated($request) ? $this->json(['status' => 'ok']) : $this->deny(401);
+        if (! $this->authenticated($request)) {
+            return $this->deny(401);
+        }
+        $checks = app(\McpHub\Laravel\Support\Metadata::class)->inspect();
+        $ready = ! in_array(false, $checks, true);
+        return $this->json(['status' => $ready ? 'ok' : 'not_ready', 'checks' => $checks], $ready ? 200 : 503);
     }
 
     public function capabilities(Request $request)
@@ -88,13 +93,15 @@ final class ConnectorController
             } else {
                 $primary = $query->getModel()->getKeyName();
                 $rows = $query->select(array_unique(array_merge([$primary], array_keys($definition['fields']))))
-                    ->orderByDesc($primary)->offset($offset)->limit($limit)->get()->map(function ($model) use ($definition, $actor) {
-                        $row = ['ref' => 'record_'.$model->getKey(), 'tenant_id' => $actor->tenant];
+                    ->orderByDesc($primary)->offset($offset)->limit($limit)->get()->map(function ($model) use ($definition, $actor, $resource) {
+                        $row = ['ref' => app(\McpHub\Laravel\Security\RecordReferences::class)->encode($resource, $actor, $model->getKey()),
+                            'tenant_id' => $actor->tenant];
                         foreach ($definition['fields'] as $field => $type) {
                             $value = $model->getAttribute($field);
                             if ($value !== null) {
-                                $value = $this->presentValue($value, $type);
+                                $value = \McpHub\Laravel\Support\FieldValue::present($value, $type);
                             }
+                            \McpHub\Laravel\Security\Privacy::assertSafe($value);
                             $row[$field] = $value;
                         }
                         return $row;
@@ -114,30 +121,7 @@ final class ConnectorController
 
     private function authenticated(Request $request): bool
     {
-        $key = (string) $this->connection->get('app_token', '');
-        return $this->connection->get('enabled') && strlen($key) >= 32
-            && (! $this->connection->get('require_https') || $request->isSecure())
-            && hash_equals($key, (string) $request->bearerToken());
-    }
-
-    private function presentValue($value, string $type)
-    {
-        if ($type === 'integer' && is_numeric($value) && (int) $value == $value) {
-            return (int) $value;
-        }
-        if ($type === 'number' && is_numeric($value) && is_finite((float) $value)) {
-            return (float) $value;
-        }
-        if ($type === 'boolean' && in_array($value, [true, false, 0, 1, '0', '1'], true)) {
-            return (bool) $value;
-        }
-        if ($type === 'datetime') {
-            return \Illuminate\Support\Carbon::parse($value)->toAtomString();
-        }
-        if ($type === 'string' && is_scalar($value) && strlen((string) $value) <= 512) {
-            return (string) $value;
-        }
-        throw new \RuntimeException('Resource field value is invalid.');
+        return app(\McpHub\Laravel\Security\SourceAccess::class)->allows($request);
     }
 
     private function deny(int $status = 403)

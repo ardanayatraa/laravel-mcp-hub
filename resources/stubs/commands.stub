@@ -1,0 +1,11 @@
+<?php
+
+namespace {{namespace}};
+
+final class {{class}}Commands extends \McpHub\Laravel\Commands\EloquentCommands
+{
+    protected function resource(): string
+    {
+        return '{{resource}}';
+    }
+}

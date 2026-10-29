@@ -1,0 +1,10 @@
+version: 1
+name: isolated-model-provider
+protocol: http
+description: Deterministic local model provider for package integration tests; no external model calls.
+port: 18778
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true
