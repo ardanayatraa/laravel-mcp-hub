@@ -12,7 +12,7 @@
 - Add private queued CSV/XLSX/PDF reports, bounded grouped metrics, encrypted artifacts, expiry and current actor/policy/record checks on download.
 - Build chat download links from validated source references; neutralize spreadsheet formulas and disable PDF remote resources, PHP and JavaScript.
 - Validate generated tool/input limits and private enum choices before manifest publication; run only package migration files without restoring an application schema dump.
-- Add native PostgreSQL race checks and upgrade/recovery guidance. The local thirteen-row matrix passed; final hosted CI and release review still gate stable publication.
+- Add native PostgreSQL race checks and upgrade/recovery guidance. The local and hosted thirteen-row matrices, native PostgreSQL and chat asset jobs passed; publication review and the stable tag remain outstanding.
 
 ## 0.2.0-alpha.1 - 2026-10-28
 

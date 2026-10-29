@@ -1,8 +1,9 @@
 # Unreleased development features
 
 These features are implemented on the development branch. They are not in
-`0.2.0-alpha.1` and have not been published as a stable release. The full PHP/Laravel
-CI matrix must be repeated for this branch before release.
+`0.2.0-alpha.1` and have not been published as a stable release. The development
+branch has passed the full PHP/Laravel CI matrix; every proposed release must
+retain a passing workflow.
 
 ## Install and preserve the connection
 
@@ -112,14 +113,17 @@ only.
 
 Read [UPGRADE.md](UPGRADE.md) for preservation, metadata-only installation and
 recovery. The full thirteen-row matrix and separate native PostgreSQL race checks
-now pass locally; hosted CI still needs to run on the reviewed publication branch.
+passed locally and in [hosted CI](https://github.com/ardanayatraa/laravel-mcp-hub/actions/runs/40856404324).
+All thirteen hosted combinations collected 116 tests with two opt-in skips per
+row; the native PostgreSQL job separately passed its 71 assertions. Chat assets
+also passed. The changes are available in [PR #2](https://github.com/ardanayatraa/laravel-mcp-hub/pull/2).
 
 [Private export/report downloads](EXPORTS.md) now include queued CSV/XLSX/PDF,
 actor-bound expiry and current record/policy checks. A code-only legacy application
 pilot preserved its connection/configuration and passed its native connector/client
 suites. Independent PostgreSQL workers checked transactional approvals, version
-conflicts, idempotency and export capacity. Final hosted compatibility CI and release
-artifact review remain required. Review each host application's dependency audit
+conflicts, idempotency and export capacity. Publication branch review and the
+stable tag remain outstanding. Review each host application's dependency audit
 and vendor customizations before its own cutover. Local tests and simulated model
 responses do not establish production capacity or restore upstream security support
 for end-of-life PHP/Laravel versions.
