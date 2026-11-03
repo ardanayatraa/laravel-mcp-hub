@@ -68,7 +68,7 @@ class ConnectorTest extends TestCase
 
     public function test_package_default_does_not_require_an_application_model(): void
     {
-        $defaults = require __DIR__.'/../config/mcp-hub.php';
+        $defaults = require $this->packagePath('config/mcp-hub.php');
         $this->assertSame([], $defaults['models']);
         config(['mcp-hub.models' => []]);
         $response = $this->withHeaders(['Authorization' => 'Bearer '.$this->token])->getJson('/api/ai/v1/capabilities')->assertStatus(200);

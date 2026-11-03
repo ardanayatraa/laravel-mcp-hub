@@ -12,6 +12,11 @@ use Orchestra\Testbench\TestCase as Orchestra;
 
 abstract class TestCase extends Orchestra
 {
+    protected function packagePath(string $path): string
+    {
+        return dirname((new \ReflectionClass(McpHubServiceProvider::class))->getFileName(), 2).'/'.$path;
+    }
+
     protected function getPackageProviders($app): array
     {
         return [McpHubServiceProvider::class];
@@ -56,7 +61,7 @@ abstract class TestCase extends Orchestra
     protected function setUp(): void
     {
         parent::setUp();
-        require_once __DIR__.'/../database/migrations/2026_10_29_000002_create_mcp_hub_nonces_table.php';
+        require_once $this->packagePath('database/migrations/2026_10_29_000002_create_mcp_hub_nonces_table.php');
         (new \CreateMcpHubNoncesTable())->up();
         Schema::create('users', function (Blueprint $table) {
             $table->bigIncrements('id');

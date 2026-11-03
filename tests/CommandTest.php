@@ -18,7 +18,7 @@ class CommandTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        require_once __DIR__.'/../database/migrations/2026_10_29_000001_create_mcp_hub_commands_table.php';
+        require_once $this->packagePath('database/migrations/2026_10_29_000001_create_mcp_hub_commands_table.php');
         (new \CreateMcpHubCommandsTable())->up();
         config(['mcp-hub.enabled' => true, 'mcp-hub.commands.enabled' => true, 'mcp-hub.app_key' => 'your_app',
             'mcp-hub.source_url' => 'http://source.test', 'mcp-hub.app_token' => $this->token,
@@ -198,7 +198,7 @@ class CommandTest extends TestCase
 
     public function test_commands_are_disabled_by_default_and_disappear_when_revoked(): void
     {
-        $defaults = require __DIR__.'/../config/mcp-hub.php';
+        $defaults = require $this->packagePath('config/mcp-hub.php');
         $this->assertFalse($defaults['commands']['enabled']);
         $manifest = app(Registry::class)->manifest(app(Connection::class));
         $this->assertCount(3, $manifest['modules'][0]['write_endpoints']);
