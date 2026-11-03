@@ -15,7 +15,7 @@ class GenericCommandsTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        require_once __DIR__.'/../database/migrations/2026_10_29_000001_create_mcp_hub_commands_table.php';
+        require_once $this->packagePath('database/migrations/2026_10_29_000001_create_mcp_hub_commands_table.php');
         (new \CreateMcpHubCommandsTable())->up();
         config(['mcp-hub.enabled' => true, 'mcp-hub.commands.enabled' => true, 'mcp-hub.app_key' => 'your_app',
             'mcp-hub.models.orders.policy' => OrderWritePolicy::class,

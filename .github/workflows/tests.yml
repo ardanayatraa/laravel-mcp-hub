@@ -9,6 +9,30 @@ permissions:
   contents: read
 
 jobs:
+  distribution:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_sqlite, dom, mbstring, zip
+          coverage: none
+          tools: composer:2.9.8
+      - run: composer validate --strict
+      - run: composer archive --format=zip --dir=build --file=laravel-mcp-hub-1.0.0
+      - run: php scripts/check-release.php build/laravel-mcp-hub-1.0.0.zip
+      - run: composer update --working-dir=.compat/release --prefer-dist --no-interaction --no-progress
+      - run: composer audit --working-dir=.compat/release
+      - run: php .compat/release/vendor/bin/phpunit --bootstrap .compat/release/vendor/autoload.php --log-junit build/distribution.xml
+      - run: sha256sum build/laravel-mcp-hub-1.0.0.zip > build/laravel-mcp-hub-1.0.0.zip.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: distribution
+          path: |
+            build/laravel-mcp-hub-1.0.0.zip
+            build/laravel-mcp-hub-1.0.0.zip.sha256
+            build/distribution.xml
   assets:
     runs-on: ubuntu-latest
     steps:

@@ -122,7 +122,7 @@ class MetadataTest extends TestCase
 
     public function test_prune_removes_only_expired_metadata(): void
     {
-        require_once __DIR__.'/../database/migrations/2026_10_29_000001_create_mcp_hub_commands_table.php';
+        require_once $this->packagePath('database/migrations/2026_10_29_000001_create_mcp_hub_commands_table.php');
         (new \CreateMcpHubCommandsTable())->up();
         DB::table('mcp_hub_nonces')->insert([
             ['nonce' => hash('sha256', 'expired'), 'expires_at' => time() - 1],

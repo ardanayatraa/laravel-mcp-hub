@@ -1,9 +1,8 @@
-# Unreleased development features
+# Setup and application workflows (1.0)
 
-These features are implemented on the development branch. They are not in
-`0.2.0-alpha.1` and have not been published as a stable release. The development
-branch has passed the full PHP/Laravel CI matrix; every proposed release must
-retain a passing workflow.
+These features are included in 1.0.0. When upgrading from `0.2.0-alpha.1`, follow
+[UPGRADE.md](UPGRADE.md) before enabling them. Every release must retain a passing
+PHP/Laravel matrix, native PostgreSQL checks and package archive checks.
 
 ## Install and preserve the connection
 
@@ -109,7 +108,7 @@ change server cron or cache settings. If the application owns scheduling, set
 The command accepts retention from 1 through 365 days and touches package tables
 only.
 
-## Remaining stable-release gates
+## Release verification
 
 Read [UPGRADE.md](UPGRADE.md) for preservation, metadata-only installation and
 recovery. The full thirteen-row matrix and separate native PostgreSQL race checks
@@ -122,8 +121,8 @@ also passed. The changes are available in [PR #2](https://github.com/ardanayatra
 actor-bound expiry and current record/policy checks. A code-only legacy application
 pilot preserved its connection/configuration and passed its native connector/client
 suites. Independent PostgreSQL workers checked transactional approvals, version
-conflicts, idempotency and export capacity. Publication branch review and the
-stable tag remain outstanding. Review each host application's dependency audit
+conflicts, idempotency and export capacity. The 1.0 release also checks the distribution archive and runs the package suite
+against its extracted runtime code. See [RELEASING.md](RELEASING.md) for publication checks. Review each host application's dependency audit
 and vendor customizations before its own cutover. Local tests and simulated model
 responses do not establish production capacity or restore upstream security support
 for end-of-life PHP/Laravel versions.

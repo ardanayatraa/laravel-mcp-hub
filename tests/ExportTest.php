@@ -23,7 +23,7 @@ class ExportTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        require_once __DIR__.'/../database/migrations/2026_10_29_000003_create_mcp_hub_exports_table.php';
+        require_once $this->packagePath('database/migrations/2026_10_29_000003_create_mcp_hub_exports_table.php');
         (new \CreateMcpHubExportsTable())->up();
         $this->originalStorage = $this->app->storagePath();
         $this->app->useStoragePath($this->originalStorage.'/framework/testing/exports-'.bin2hex(random_bytes(8)));
