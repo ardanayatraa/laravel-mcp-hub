@@ -33,7 +33,14 @@ foreach (['src', 'config', 'database', 'resources'] as $directory) {
     foreach ($iterator as $file) {
         if (! $file->isFile()) { continue; }
         $relative = str_replace('\\', '/', substr($file->getPathname(), strlen($root) + 1));
-        if ($zip->getFromName($relative) !== file_get_contents($file->getPathname())) {
+        $archived = $zip->getFromName($relative);
+        $source = file_get_contents($file->getPathname());
+        // Git normalizes text to LF; Windows checkouts can contain CRLF.
+        if (preg_match('/\.(php|js|css|stub)$/D', $relative) && is_string($archived)) {
+            $archived = str_replace("\r\n", "\n", $archived);
+            $source = str_replace("\r\n", "\n", $source);
+        }
+        if ($archived !== $source) {
             throw new RuntimeException('Archive runtime mismatch: '.$relative);
         }
     }
