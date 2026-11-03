@@ -1,5 +1,7 @@
 # Laravel MCP Hub
 
+**Documentation:** [Laravel integration guide](https://ardanayatraa.github.io/mcp-hub/laravel/install/) · [MCP Hub documentation](https://ardanayatraa.github.io/mcp-hub/) · [Troubleshooting](https://ardanayatraa.github.io/mcp-hub/help/troubleshooting/).
+
 Expose reviewed Laravel resources to an MCP Hub and call the Hub through a scoped server-side client. Applications retain control of business data, account identity, record ownership, and permissions.
 
 **Stable release: 1.0.0.** Includes one-use pairing, application-approved CRUD proposals, protected settings/chat, a scoped Gateway SDK and private CSV/XLSX/PDF reports. See [setup and workflows](DEVELOPMENT.md) and the [upgrade guide](UPGRADE.md). One package supports Laravel 5.8, 6, 7, 8, 9, 10, 11, 12 and 13. The package requires PHP 7.2.5 or later in the PHP 7/8 families; the framework and the application's other dependencies determine the effective PHP requirement.
