@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.0.0 - 2026-11-03
 
 - Add source-bound one-use pairing, encrypted resumable installation proof, scoped sync/status/disconnect and replacement support.
 - Add transactional CRUD proposals, canonical previews, application session/CSRF approval, version/scope revalidation and idempotent status receipts.
@@ -12,7 +12,7 @@
 - Add private queued CSV/XLSX/PDF reports, bounded grouped metrics, encrypted artifacts, expiry and current actor/policy/record checks on download.
 - Build chat download links from validated source references; neutralize spreadsheet formulas and disable PDF remote resources, PHP and JavaScript.
 - Validate generated tool/input limits and private enum choices before manifest publication; run only package migration files without restoring an application schema dump.
-- Add native PostgreSQL race checks and upgrade/recovery guidance. The local and hosted thirteen-row matrices, native PostgreSQL and chat asset jobs passed; publication review and the stable tag remain outstanding.
+- Add native PostgreSQL race checks and upgrade/recovery guidance. The local and hosted thirteen-row matrices, native PostgreSQL and chat asset jobs passed. Distribution checks validate the archive contents and exercise the extracted runtime before publication.
 
 ## 0.2.0-alpha.1 - 2026-10-28
 

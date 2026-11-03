@@ -1,8 +1,8 @@
 # Upgrade and recovery
 
-The published release remains `0.2.0-alpha.1`. Pairing, durable nonce/command/export
-metadata and the protected application UI described here belong to the development
-branch. Install a reviewed release containing those features before using them.
+Version 1.0.0 includes pairing, durable nonce/command/export metadata and the
+protected application UI. When upgrading from `0.2.0-alpha.1`, install the SQL
+security metadata before switching traffic to the new code.
 Keep one package name across Laravel versions; Composer resolves PHP/framework
 requirements from the application. There is no Laravel-version-specific package.
 
@@ -33,8 +33,8 @@ file format; pinned environment configuration still takes precedence.
 Build dependencies using the application's normal locked release process. Review
 dependency conflicts and audits; do not use ignore-platform flags, disable
 security blocking or rewrite application credentials to make an install pass.
-For the development branch, use the documented local path fixture rather than
-pretending a stable release already exists.
+Use `composer require ardanayatraa/laravel-mcp-hub:^1.0` in your reviewed build.
+Retain the resulting application lock file for reproducible deployment.
 
 Inspect the installation plan first:
 
@@ -107,7 +107,7 @@ from a prototype overlay to resolve a dependency problem.
 
 ## Compatibility evidence
 
-The development suite was exercised locally across all thirteen declared
+The release suite was exercised locally across all thirteen declared
 PHP/Laravel combinations, including actual PHP 7.2/7.3/8.0/8.4 containers and native
 PHP 7.4/8.1/8.2/8.3 runtimes. Separate PostgreSQL workers verified duplicate commits,
 record-version conflicts, idempotency and export capacity. The workflows repeat

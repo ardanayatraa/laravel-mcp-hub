@@ -2,7 +2,7 @@
 
 Expose reviewed Laravel resources to an MCP Hub and call the Hub through a scoped server-side client. Applications retain control of business data, account identity, record ownership, and permissions.
 
-**Published alpha:** 0.2.0-alpha.1. This development branch adds pairing, CRUD proposals, settings/chat and a Gateway SDK; see [unreleased features and setup](DEVELOPMENT.md). A stable release has not been published. One package supports Laravel 5.8, 6, 7, 8, 9, 10, 11, 12 and 13. The package requires PHP 7.2.5 or later in the PHP 7/8 families; the framework and the application's other dependencies determine the effective PHP requirement.
+**Stable release: 1.0.0.** Includes one-use pairing, application-approved CRUD proposals, protected settings/chat, a scoped Gateway SDK and private CSV/XLSX/PDF reports. See [setup and workflows](DEVELOPMENT.md) and the [upgrade guide](UPGRADE.md). One package supports Laravel 5.8, 6, 7, 8, 9, 10, 11, 12 and 13. The package requires PHP 7.2.5 or later in the PHP 7/8 families; the framework and the application's other dependencies determine the effective PHP requirement.
 
 | Laravel reference | PHP tested in CI |
 |---|---|
@@ -23,15 +23,16 @@ There are **no business models registered by default**.
 ## Install
 
 ~~~bash
-composer require ardanayatraa/laravel-mcp-hub:@alpha
-php artisan mcp-hub:install
+composer require ardanayatraa/laravel-mcp-hub:^1.0
+php artisan mcp-hub:install --dry-run --migrate
+php artisan mcp-hub:install --migrate
 ~~~
 
-No package version number is needed: Composer resolves a compatible release using the project's PHP and Laravel dependency constraints. The @alpha flag allows the current preview releases without changing the project's global minimum stability. It can be omitted once a compatible stable release is available. Composer package names require the vendor/package form.
+Composer resolves a compatible 1.x release using the application's PHP and Laravel constraints. Global minimum stability does not need to change. Review package metadata migrations and your database backup first; production migration execution additionally requires `--force`.
 
 Laravel discovers the provider automatically unless the application disables package discovery. The installer publishes config/mcp-hub.php only when it does not already exist. It does not overwrite application files, run application migrations, create a Hub account, grant data access, or rotate credentials.
 
-Version 0.2 keeps the 0.1 configuration keys, contracts and source API. It uses Guzzle 7.15.2 or newer directly so older Laravel applications do not need Laravel's newer HTTP facade. An application pinned to Guzzle 6 must resolve that dependency before installation. No business model is mandatory.
+Version 1.0 preserves existing connection configuration and adds required SQL security metadata. Review the upgrade guide before switching from alpha. It uses Guzzle 7.15.2 or newer directly so older Laravel applications do not need Laravel's newer HTTP facade. An application pinned to Guzzle 6 must resolve that dependency before installation. No business model is mandatory.
 
 ## Configure a connection
 
@@ -58,7 +59,7 @@ php artisan mcp-hub:doctor
 php artisan mcp-hub:doctor --online --json
 ~~~
 
-Import saves an encrypted copy under storage/app/mcp-hub/connection.enc using the application's encryption key. Existing environment values take precedence. Do not remove environment configuration expecting a complete provisioning workflow: one-time pairing and a database-backed settings screen are future work.
+Import saves an encrypted copy under storage/app/mcp-hub/connection.enc using the application's encryption key. Existing environment values take precedence. Pinned environment values remain authoritative. For one-use pairing, protected settings, resume and replacement, follow [setup and workflows](DEVELOPMENT.md).
 
 ## Register application-owned resources
 
@@ -105,7 +106,7 @@ The default prefix is /api/ai/v1:
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET | /health | Service-authenticated health; development code also checks required security metadata |
+| GET | /health | Service-authenticated health; also checks required security metadata |
 | GET | /capabilities | Application-managed Connector Contract 1.0 manifest |
 | GET | /{resource}/list | Authorized, paginated records |
 | GET | /{resource}/get | Exact lookup using the registered field |
@@ -113,11 +114,11 @@ The default prefix is /api/ai/v1:
 
 All routes require the configured bearer app token. Reads additionally require a signed X-Hub-Assertion carrying the approved app key, audience, active user reference, tenant, expiry, and one-use jti.
 
-Development code uses durable SQL nonce uniqueness for replay rejection, including across workers and cache flushes. Run the package migrations first. Source responses are marked no-store. The published alpha uses its earlier cache-backed replay implementation.
+Version 1.0 uses durable SQL nonce uniqueness for replay rejection, including across workers and cache flushes. Run the package migrations first. Source responses are marked no-store. Earlier alpha releases used cache-backed replay protection; upgrade requires the SQL metadata migrations.
 
 If the application already owns these routes, set routes.enabled to false and adapt its existing source registry and gateway rather than registering duplicate endpoints.
 
-The published alpha exposes reads only. The [development features](DEVELOPMENT.md) add application-owned write proposals, protected settings/chat and a scoped Gateway SDK. [Private report exports](EXPORTS.md) add bounded CSV/XLSX/PDF jobs with authenticated downloads. Business rules remain in the host application; provider credentials remain at the Hub.
+Version 1.0 includes [application-owned write proposals, protected settings/chat and a scoped Gateway SDK](DEVELOPMENT.md). Writes remain disabled until explicitly configured. [Private report exports](EXPORTS.md) add bounded CSV/XLSX/PDF jobs with authenticated downloads. Business rules remain in the host application; provider credentials remain at the Hub.
 
 ## Hub transport
 

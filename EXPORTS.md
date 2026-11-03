@@ -1,6 +1,6 @@
-# Private report exports (development branch)
+# Private report exports (1.0)
 
-This feature is not in the published alpha. It adds CSV, XLSX and PDF files owned
+Version 1.0 adds CSV, XLSX and PDF files owned
 by the Laravel application. The Hub receives an export receipt, never the file or
 its business rows. Defaults enable no exports and assume no application models.
 
