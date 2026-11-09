@@ -113,7 +113,7 @@ jobs:
         run: |
           guzzle=$(composer show --working-dir=.compat/${{ matrix.laravel }} guzzlehttp/guzzle --format=json | php -r 'echo json_decode(stream_get_contents(STDIN), true)["versions"][0];')
           echo "guzzlehttp/guzzle $guzzle"
-          # Laravel 13 applications install Guzzle 8 by default; older rows keep Guzzle 7.
+          # Fresh Laravel 13 applications install Guzzle 8; other rows resolve 7 or 8 from their framework and PHP.
           if [ "${{ matrix.laravel }}" = "13" ]; then case "$guzzle" in 8.*) ;; *) exit 1;; esac; fi
       - run: php .compat/${{ matrix.laravel }}/vendor/bin/phpunit --bootstrap .compat/${{ matrix.laravel }}/vendor/autoload.php --log-junit .compat/results.xml
       - name: Review historical upstream advisories

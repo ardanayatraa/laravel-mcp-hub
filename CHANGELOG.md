@@ -2,7 +2,7 @@
 
 ## 1.0.1 - 2026-11-09
 
-- Accept Guzzle 8 as well as Guzzle 7, so `composer require ardanayatraa/laravel-mcp-hub:^1.0` installs on a fresh Laravel 13 application without `-W`. Laravel 13 matrix rows now resolve and assert Guzzle 8; older rows keep Guzzle 7.
+- Accept Guzzle 8 as well as Guzzle 7, so `composer require ardanayatraa/laravel-mcp-hub:^1.0` installs on a fresh Laravel 13 application without `-W`. The matrix now covers both: Guzzle 8 on Laravel 5.8 (PHP 7.4), 9, 10 and 13, Guzzle 7 on PHP 7.2/7.3 and on Laravel 11 and 12, and the Laravel 13 rows assert Guzzle 8.
 - Stop sending an `Origin` header on server-to-server Hub calls. Hubs no longer need the Laravel source URL in `ALLOWED_ORIGINS` for MCP calls to succeed after pairing.
 - Declare the response buffer's stream property, removing the PHP 8.2+ dynamic property deprecation on every Hub call.
 - Give the package's rate limits their own counters (`mcp-hub-source-`, `mcp-hub-web-`) so they no longer share the per-address counter with the host's unprefixed `throttle` middleware (Laravel 6+). The source limit is configurable with `routes.throttle` / `MCP_HUB_SOURCE_THROTTLE` and now defaults to 120 requests per minute for all Hub calls together.
