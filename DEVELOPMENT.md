@@ -1,6 +1,6 @@
 # Setup and application workflows (1.0)
 
-These features are included in 1.0.0. When upgrading from `0.2.0-alpha.1`, follow
+These features are included in 1.0.0 and later 1.0.x releases. When upgrading from `0.2.0-alpha.1`, follow
 [UPGRADE.md](UPGRADE.md) before enabling them. Every release must retain a passing
 PHP/Laravel matrix, native PostgreSQL checks and package archive checks.
 

@@ -9,7 +9,8 @@ http.createServer((req, res) => {
     return send(501, { error: 'Endpoint not modeled' });
   }
   const body = req.body;
-  if (req.headers.authorization !== 'Bearer dummy-client-key' || req.headers.origin !== 'http://source.test') {
+  // Like a Hub that lists no application origins: server-to-server calls must not send Origin.
+  if (req.headers.authorization !== 'Bearer dummy-client-key' || req.headers.origin !== undefined) {
     return send(403, { error: 'Invalid scoped caller' });
   }
   if (!body || body.jsonrpc !== '2.0' || body.method !== 'tools/list' || !body.params?._meta) {

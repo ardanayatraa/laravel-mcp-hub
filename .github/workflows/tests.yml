@@ -11,6 +11,8 @@ permissions:
 jobs:
   distribution:
     runs-on: ubuntu-latest
+    env:
+      RELEASE: laravel-mcp-hub-1.0.1
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -20,18 +22,18 @@ jobs:
           coverage: none
           tools: composer:2.9.8
       - run: composer validate --strict
-      - run: composer archive --format=zip --dir=build --file=laravel-mcp-hub-1.0.0
-      - run: php scripts/check-release.php build/laravel-mcp-hub-1.0.0.zip
+      - run: composer archive --format=zip --dir=build --file=$RELEASE
+      - run: php scripts/check-release.php build/$RELEASE.zip
       - run: composer update --working-dir=.compat/release --prefer-dist --no-interaction --no-progress
       - run: composer audit --working-dir=.compat/release
       - run: php .compat/release/vendor/bin/phpunit --bootstrap .compat/release/vendor/autoload.php --log-junit build/distribution.xml
-      - run: sha256sum build/laravel-mcp-hub-1.0.0.zip > build/laravel-mcp-hub-1.0.0.zip.sha256
+      - run: sha256sum build/$RELEASE.zip > build/$RELEASE.zip.sha256
       - uses: actions/upload-artifact@v4
         with:
           name: distribution
           path: |
-            build/laravel-mcp-hub-1.0.0.zip
-            build/laravel-mcp-hub-1.0.0.zip.sha256
+            build/${{ env.RELEASE }}.zip
+            build/${{ env.RELEASE }}.zip.sha256
             build/distribution.xml
   assets:
     runs-on: ubuntu-latest
@@ -106,6 +108,13 @@ jobs:
       - run: php scripts/prepare-matrix.php ${{ matrix.laravel }}
       - run: composer update --working-dir=.compat/${{ matrix.laravel }} --prefer-dist --no-interaction --no-progress
       - run: composer check-platform-reqs --working-dir=.compat/${{ matrix.laravel }}
+      - name: Confirm the resolved Guzzle major
+        shell: bash
+        run: |
+          guzzle=$(composer show --working-dir=.compat/${{ matrix.laravel }} guzzlehttp/guzzle --format=json | php -r 'echo json_decode(stream_get_contents(STDIN), true)["versions"][0];')
+          echo "guzzlehttp/guzzle $guzzle"
+          # Fresh Laravel 13 applications install Guzzle 8; other rows resolve 7 or 8 from their framework and PHP.
+          if [ "${{ matrix.laravel }}" = "13" ]; then case "$guzzle" in 8.*) ;; *) exit 1;; esac; fi
       - run: php .compat/${{ matrix.laravel }}/vendor/bin/phpunit --bootstrap .compat/${{ matrix.laravel }}/vendor/autoload.php --log-junit .compat/results.xml
       - name: Review historical upstream advisories
         if: always()

@@ -14,8 +14,8 @@ composer install --no-interaction --prefer-dist
 composer audit --locked
 composer test
 node scripts/check-chat.js
-composer archive --format=zip --dir=build --file=laravel-mcp-hub-1.0.0
-php scripts/check-release.php build/laravel-mcp-hub-1.0.0.zip
+composer archive --format=zip --dir=build --file=laravel-mcp-hub-X.Y.Z
+php scripts/check-release.php build/laravel-mcp-hub-X.Y.Z.zip
 composer update --working-dir=.compat/release --prefer-dist --no-interaction
 php .compat/release/vendor/bin/phpunit --bootstrap .compat/release/vendor/autoload.php
 ```
@@ -30,12 +30,13 @@ the modern distribution fixture must pass an unmodified Composer audit.
 
 ## Publish
 
-Confirm the remote branch still points to the tested commit and that no 1.0.0
-tag exists. Create `v1.0.0` at that exact SHA, publish release notes from
+Use the release version for `X.Y.Z` (and the `RELEASE` value in the Tests workflow).
+Confirm the remote branch still points to the tested commit and that no `vX.Y.Z`
+tag exists. Create `vX.Y.Z` at that exact SHA, publish release notes from
 CHANGELOG.md and attach the verified ZIP and its SHA-256 checksum. Do not retag
 an existing release. Corrections require a new patch release.
 
-Wait for the tag's Tests workflow to succeed. Confirm Packagist lists `v1.0.0`
+Wait for the tag's Tests workflow to succeed. Confirm Packagist lists `vX.Y.Z`
 and its source reference equals the tag commit. A GitHub release alone does not
 prove Composer distribution is available. Test resolution with default stable
 settings, without `@alpha`, on a disposable consumer manifest.

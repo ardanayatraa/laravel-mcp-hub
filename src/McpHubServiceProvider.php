@@ -38,7 +38,7 @@ final class McpHubServiceProvider extends ServiceProvider
             });
         }
         if (config('mcp-hub.routes.enabled') && ! $this->app->routesAreCached()) {
-            Route::prefix(trim(config('mcp-hub.routes.prefix'), '/'))->middleware('throttle:60,1')
+            Route::prefix(trim(config('mcp-hub.routes.prefix'), '/'))->middleware(self::throttle())
                 ->name('mcp-hub.')->group(function () {
                     Route::get('health', [ConnectorController::class, 'health'])->name('health');
                     Route::get('capabilities', [ConnectorController::class, 'capabilities'])->name('capabilities');
@@ -57,7 +57,7 @@ final class McpHubServiceProvider extends ServiceProvider
         if (config('mcp-hub.web.enabled') && ! $this->app->routesAreCached()) {
             Route::get(trim(config('mcp-hub.web.prefix'), '/').'/assets/{asset}', [Http\AssetController::class, 'show'])
                 ->where('asset', 'chat\.js|chat\.css|settings\.js')->name('mcp-hub.asset');
-            Route::prefix(trim(config('mcp-hub.web.prefix'), '/'))->middleware(['web', Http\WebBoundary::class, 'throttle:30,1'])
+            Route::prefix(trim(config('mcp-hub.web.prefix'), '/'))->middleware(['web', Http\WebBoundary::class, 'throttle:30,1,mcp-hub-web-'])
                 ->name('mcp-hub.')->group(function () {
                     Route::get('/', [Http\SettingsController::class, 'show'])->name('settings.show');
                     Route::post('settings', [Http\SettingsController::class, 'save'])->name('settings.save');
@@ -74,5 +74,19 @@ final class McpHubServiceProvider extends ServiceProvider
                     Route::post('proposals/{proposal}', [Http\ApprovalController::class, 'confirm'])->name('approval.confirm');
                 });
         }
+    }
+
+    /**
+     * Source routes: every Hub call arrives from the Hub's address, so the limit is shared by all of
+     * the application's users. The named prefix keeps it apart from the host's own unprefixed throttles
+     * (Laravel 6+; Laravel 5.8 ignores the prefix).
+     */
+    private static function throttle(): string
+    {
+        $rate = config('mcp-hub.routes.throttle', '120,1');
+        if (! is_string($rate) || ! preg_match('/^[1-9][0-9]{0,4},[1-9][0-9]{0,3}$/D', $rate)) {
+            $rate = '120,1';
+        }
+        return 'throttle:'.$rate.',mcp-hub-source-';
     }
 }

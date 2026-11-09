@@ -12,6 +12,8 @@ final class BoundedStream implements StreamInterface
 {
     use StreamDecoratorTrait;
 
+    /** @var StreamInterface Declared here: PHP 8.2+ deprecates the trait's dynamic property. */
+    private $stream;
     private $limit;
     private $deadline;
 

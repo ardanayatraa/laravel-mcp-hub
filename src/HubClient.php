@@ -8,6 +8,9 @@ use Throwable;
 
 final class HubClient
 {
+    /** The package release reported to the Hub as MCP clientInfo. */
+    const VERSION = '1.0.1';
+
     private $requestId = 0;
     private $connection;
     private $transport;
@@ -35,10 +38,10 @@ final class HubClient
         $version = (string) $this->connection->get('protocol_version');
         $params['_meta'] = ['io.modelcontextprotocol/protocolVersion' => $version,
             'io.modelcontextprotocol/clientCapabilities' => new \stdClass(),
-            'io.modelcontextprotocol/clientInfo' => ['name' => 'laravel-mcp-hub', 'version' => '0.2.0-alpha.1']];
+            'io.modelcontextprotocol/clientInfo' => ['name' => 'laravel-mcp-hub', 'version' => self::VERSION]];
         $safeHeaders = ['Accept' => 'application/json, text/event-stream', 'Content-Type' => 'application/json',
             'MCP-Protocol-Version' => $version,
-            'MCP-Method' => $method, 'Origin' => (string) $this->connection->get('source_url')];
+            'MCP-Method' => $method];
         if (isset($params['name'])) {
             $safeHeaders['MCP-Name'] = $params['name'];
         }

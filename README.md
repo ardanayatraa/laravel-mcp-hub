@@ -4,7 +4,7 @@
 
 Expose reviewed Laravel resources to an MCP Hub and call the Hub through a scoped server-side client. Applications retain control of business data, account identity, record ownership, and permissions.
 
-**Stable release: 1.0.0.** Includes one-use pairing, application-approved CRUD proposals, protected settings/chat, a scoped Gateway SDK and private CSV/XLSX/PDF reports. See [setup and workflows](DEVELOPMENT.md) and the [upgrade guide](UPGRADE.md). One package supports Laravel 5.8, 6, 7, 8, 9, 10, 11, 12 and 13. The package requires PHP 7.2.5 or later in the PHP 7/8 families; the framework and the application's other dependencies determine the effective PHP requirement.
+**Stable release: 1.0.1.** Includes one-use pairing, application-approved CRUD proposals, protected settings/chat, a scoped Gateway SDK and private CSV/XLSX/PDF reports. See [setup and workflows](DEVELOPMENT.md) and the [upgrade guide](UPGRADE.md). One package supports Laravel 5.8, 6, 7, 8, 9, 10, 11, 12 and 13. The package requires PHP 7.2.5 or later in the PHP 7/8 families; the framework and the application's other dependencies determine the effective PHP requirement.
 
 | Laravel reference | PHP tested in CI |
 |---|---|
@@ -34,7 +34,7 @@ Composer resolves a compatible 1.x release using the application's PHP and Larav
 
 Laravel discovers the provider automatically unless the application disables package discovery. The installer publishes config/mcp-hub.php only when it does not already exist. It does not overwrite application files, run application migrations, create a Hub account, grant data access, or rotate credentials.
 
-Version 1.0 preserves existing connection configuration and adds required SQL security metadata. Review the upgrade guide before switching from alpha. It uses Guzzle 7.15.2 or newer directly so older Laravel applications do not need Laravel's newer HTTP facade. An application pinned to Guzzle 6 must resolve that dependency before installation. No business model is mandatory.
+Version 1.0 preserves existing connection configuration and adds required SQL security metadata. Review the upgrade guide before switching from alpha. It uses Guzzle 7.15.2+ or Guzzle 8 directly so older Laravel applications do not need Laravel's newer HTTP facade; a fresh Laravel 13 application keeps its Guzzle 8. An application pinned to Guzzle 6 must resolve that dependency before installation. No business model is mandatory.
 
 ## Configure a connection
 
@@ -53,7 +53,7 @@ MCP_HUB_DELEGATION_SECRET=
 
 The client key authenticates Laravel to the Hub. The app token authenticates the Hub to Laravel. The delegation secret signs short-lived actor context; use at least 32 random characters for the app token and delegation secret. Keep all credentials server-side.
 
-MCP_HUB_BASE_URL is the Laravel source URL, not the Hub URL. The Hub must be able to reach it, and its network/origin policy must permit the connection. Local HTTP Hub calls are accepted only for loopback addresses in Laravel's local/testing environments.
+MCP_HUB_BASE_URL is the Laravel source URL, not the Hub URL. The Hub must be able to reach it, and its egress policy must permit the connection. Calls from Laravel to the Hub are server-to-server and send no `Origin` header, so the Hub's `ALLOWED_ORIGINS` does not need the source URL (version 1.0.0 sent one; upgrade, or list the source URL there). Local HTTP Hub calls are accepted only for loopback addresses in Laravel's local/testing environments.
 
 ~~~bash
 php artisan mcp-hub:connect --import-env
@@ -114,7 +114,7 @@ The default prefix is /api/ai/v1:
 | GET | /{resource}/get | Exact lookup using the registered field |
 | GET | /{resource}/count | Count within the same authorized scope |
 
-All routes require the configured bearer app token. Reads additionally require a signed X-Hub-Assertion carrying the approved app key, audience, active user reference, tenant, expiry, and one-use jti.
+All routes require the configured bearer app token. Every Hub call comes from the Hub's address, so the routes share one rate limit, 120 requests per minute by default; set `MCP_HUB_SOURCE_THROTTLE=requests,minutes` (for example `600,1`) for busier applications. The limit uses its own counter and does not consume the host's `throttle` limits (Laravel 6+). Reads additionally require a signed X-Hub-Assertion carrying the approved app key, audience, active user reference, tenant, expiry, and one-use jti.
 
 Version 1.0 uses durable SQL nonce uniqueness for replay rejection, including across workers and cache flushes. Run the package migrations first. Source responses are marked no-store. Earlier alpha releases used cache-backed replay protection; upgrade requires the SQL metadata migrations.
 
