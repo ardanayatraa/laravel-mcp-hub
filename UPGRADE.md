@@ -6,6 +6,17 @@ security metadata before switching traffic to the new code.
 Keep one package name across Laravel versions; Composer resolves PHP/framework
 requirements from the application. There is no Laravel-version-specific package.
 
+## 1.0.0 to 1.0.1
+
+No migration or configuration change is required: run
+`composer update ardanayatraa/laravel-mcp-hub` within the application's normal
+review. Guzzle 7 and 8 are both accepted. Calls to the Hub no longer send an
+`Origin` header, so a source URL added to the Hub's `ALLOWED_ORIGINS` only for this
+package may be removed. Package rate limits now use their own counters; the source
+routes allow 120 requests per minute for all Hub calls together unless
+`routes.throttle` (or `MCP_HUB_SOURCE_THROTTLE`) says otherwise. An existing
+published `config/mcp-hub.php` without that key uses the default.
+
 ## Preserve application ownership
 
 Before an upgrade, retain the application's normal database backup, lock file,

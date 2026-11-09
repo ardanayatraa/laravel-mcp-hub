@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.1 - 2026-11-09
+
+- Accept Guzzle 8 as well as Guzzle 7, so `composer require ardanayatraa/laravel-mcp-hub:^1.0` installs on a fresh Laravel 13 application without `-W`. Laravel 13 matrix rows now resolve and assert Guzzle 8; older rows keep Guzzle 7.
+- Stop sending an `Origin` header on server-to-server Hub calls. Hubs no longer need the Laravel source URL in `ALLOWED_ORIGINS` for MCP calls to succeed after pairing.
+- Declare the response buffer's stream property, removing the PHP 8.2+ dynamic property deprecation on every Hub call.
+- Give the package's rate limits their own counters (`mcp-hub-source-`, `mcp-hub-web-`) so they no longer share the per-address counter with the host's unprefixed `throttle` middleware (Laravel 6+). The source limit is configurable with `routes.throttle` / `MCP_HUB_SOURCE_THROTTLE` and now defaults to 120 requests per minute for all Hub calls together.
+- Render chat answers with a safe Markdown subset (paragraphs, tables, lists, headings, bold and code) built from DOM nodes; model text never becomes HTML and links stay plain text.
+- Report the package release as the MCP client version.
+
 ## 1.0.0 - 2026-11-03
 
 - Add source-bound one-use pairing, encrypted resumable installation proof, scoped sync/status/disconnect and replacement support.
