@@ -134,5 +134,29 @@
     "PKSA-xmwy-rmx5-m7h4": {
         "apply": "block",
         "reason": "Isolated legacy Symfony fixture only; not a security fix. CVE-2026-108082: ReDoS in HeaderUtils::split() Reachable Through the Cache-Control Request Header"
+    },
+    "PKSA-24ph-xkrh-y79j": {
+        "apply": "block",
+        "reason": "Isolated historical framework fixture only; not a security fix. CVE-2026-118514: HEAD Requests Bypass the methods Option of security.access_control Rules and Firewalls: Incomplete Fix for CVE-2026-45075"
+    },
+    "PKSA-b2gg-vk1g-6d5q": {
+        "apply": "block",
+        "reason": "Isolated historical framework fixture only; not a security fix. Generated URLs Can Point to a Host Chosen by the Client"
+    },
+    "PKSA-3gxv-7xhq-mgmz": {
+        "apply": "block",
+        "reason": "Isolated historical framework fixture only; not a security fix. Inline Fragments Let Untrusted Forwarded Headers Set the Host, Scheme and Port of the URLs Generated for the Main Request"
+    },
+    "PKSA-8knv-7jsn-12w8": {
+        "apply": "block",
+        "reason": "Isolated historical framework fixture only; not a security fix. CVE-2020-15094: Prevent RCE when calling untrusted remote with CachingHttpClient"
+    },
+    "PKSA-sn9k-4yr8-6s9c": {
+        "apply": "block",
+        "reason": "Isolated historical framework fixture only; not a security fix. CVE-2019-18887: Use constant time comparison in UriSigner"
+    },
+    "PKSA-y8c5-1b7f-r1gj": {
+        "apply": "block",
+        "reason": "Isolated historical framework fixture only; not a security fix. CVE-2026-118516: Host Placeholders Can Match the Start of the Path in Compiled URL Matchers, Bypassing Path-Based Access Control"
     }
 }
