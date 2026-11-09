@@ -41,8 +41,9 @@ final class HubTransport
             }
             $url = substr($url, 0, -4).$path;
         }
+        // No Origin header: this is a server-to-server call, and Hubs reject browser origins they do not list.
         $safe = ['Accept' => 'application/json, text/event-stream', 'Content-Type' => 'application/json',
-            'Authorization' => 'Bearer '.$token, 'Origin' => (string) $this->connection->get('source_url')];
+            'Authorization' => 'Bearer '.$token];
         foreach (['MCP-Protocol-Version', 'MCP-Method', 'MCP-Name', 'X-Hub-Delegation'] as $name) {
             if (isset($headers[$name]) && is_string($headers[$name])) {
                 $safe[$name] = $headers[$name];

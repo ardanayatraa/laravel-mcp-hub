@@ -13,7 +13,8 @@ return [
     'timeout' => (int) env('MCP_HUB_TIMEOUT', 12),
     'chat_timeout' => (int) env('MCP_HUB_CHAT_TIMEOUT', 120),
     'protocol_version' => '2026-07-28',
-    'routes' => ['enabled' => true, 'prefix' => 'api/ai/v1'],
+    // throttle: "requests,minutes" for all Hub calls together (they share the Hub's address).
+    'routes' => ['enabled' => true, 'prefix' => 'api/ai/v1', 'throttle' => env('MCP_HUB_SOURCE_THROTTLE', '120,1')],
     'commands' => ['enabled' => false, 'ttl' => 300],
     'exports' => ['enabled' => false, 'ttl' => 600, 'connection' => null, 'queue' => 'default'],
     'maintenance' => ['scheduled_prune' => true],

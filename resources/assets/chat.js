@@ -9,10 +9,94 @@
     const messages = root.querySelector("[data-messages]");
     const status = root.querySelector("[data-status]");
     let history = [];
+    // A small Markdown subset (tables, lists, headings, **bold**, `code`) built with DOM nodes only:
+    // model text never becomes HTML, and links in it stay plain text.
+    const inline = (parent, text) => {
+      const pattern = /\*\*([^*\n]+)\*\*|`([^`\n]+)`/g;
+      let last = 0;
+      let match;
+      while ((match = pattern.exec(text))) {
+        if (match.index > last) parent.appendChild(document.createTextNode(text.slice(last, match.index)));
+        const node = document.createElement(match[1] !== undefined ? "strong" : "code");
+        node.textContent = match[1] !== undefined ? match[1] : match[2];
+        parent.appendChild(node);
+        last = pattern.lastIndex;
+      }
+      if (last < text.length) parent.appendChild(document.createTextNode(text.slice(last)));
+    };
+    const cells = line => line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map(cell => cell.trim());
+    const divider = /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?\s*$/;
+    const render = (box, text) => {
+      const lines = text.replace(/\r\n?/g, "\n").split("\n");
+      let paragraph = [];
+      let list = null;
+      let listTag = "";
+      const flush = () => {
+        if (paragraph.length) {
+          const p = document.createElement("p");
+          inline(p, paragraph.join("\n"));
+          box.appendChild(p);
+        }
+        paragraph = [];
+      };
+      for (let index = 0; index < lines.length; index++) {
+        const line = lines[index].trim();
+        const item = /^(?:[-*•]|(\d{1,3})[.)])\s+(.*)$/.exec(line);
+        if (!item) list = null;
+        if (!line) { flush(); continue; }
+        if (line.startsWith("|") && divider.test(lines[index + 1] || "")) {
+          flush();
+          const wrap = document.createElement("div");
+          wrap.className = "mcp-table";
+          const table = document.createElement("table");
+          const row = (values, tag) => {
+            const tr = document.createElement("tr");
+            for (const value of values) {
+              const cell = document.createElement(tag);
+              inline(cell, value);
+              tr.appendChild(cell);
+            }
+            table.appendChild(tr);
+          };
+          row(cells(line), "th");
+          for (index += 2; index < lines.length && lines[index].trim().startsWith("|"); index++) row(cells(lines[index]), "td");
+          index--;
+          wrap.appendChild(table);
+          box.appendChild(wrap);
+          continue;
+        }
+        const heading = /^#{1,4}\s+(.+)$/.exec(line);
+        if (heading) {
+          flush();
+          const p = document.createElement("p");
+          const strong = document.createElement("strong");
+          inline(strong, heading[1]);
+          p.appendChild(strong);
+          box.appendChild(p);
+          continue;
+        }
+        if (item) {
+          flush();
+          const tag = item[1] === undefined ? "ul" : "ol";
+          if (!list || listTag !== tag) {
+            list = document.createElement(tag);
+            listTag = tag;
+            box.appendChild(list);
+          }
+          const li = document.createElement("li");
+          inline(li, item[2]);
+          list.appendChild(li);
+          continue;
+        }
+        paragraph.push(line);
+      }
+      flush();
+    };
     const append = (text, role) => {
       const item = document.createElement("div");
-      item.className = "mcp-bubble" + (role === "user" ? " mcp-bubble-user" : "");
-      item.textContent = text;
+      item.className = "mcp-bubble" + (role === "user" ? " mcp-bubble-user" : " mcp-rich");
+      if (role === "user") item.textContent = text;
+      else render(item, text);
       messages.appendChild(item);
       messages.scrollTop = messages.scrollHeight;
     };

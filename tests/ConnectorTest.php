@@ -184,11 +184,52 @@ class ConnectorTest extends TestCase
         $this->assertSame(['tools' => []], $client->rpc('tools/list', [], ['Authorization' => 'unsafe']));
         $request = $history[0]['request'];
         $this->assertSame('Bearer dummy-client-key', $request->getHeaderLine('Authorization'));
-        $this->assertSame('http://source.test', $request->getHeaderLine('Origin'));
+        $this->assertFalse($request->hasHeader('Origin'));
         $this->assertSame('application/json', $request->getHeaderLine('Content-Type'));
         $this->assertSame('tools/list', json_decode((string) $request->getBody(), true)['method']);
         $this->expectExceptionMessage('MCP Hub request failed.');
         $client->rpc('tools/list');
+    }
+
+    public function test_package_routes_use_their_own_rate_limit_counters(): void
+    {
+        $routes = app('router')->getRoutes();
+        // A host route with a plain throttle:N,M would otherwise share the per-address counter with every Hub call.
+        $this->assertContains('throttle:120,1,mcp-hub-source-', $routes->getByName('mcp-hub.health')->middleware());
+        $this->assertContains('throttle:120,1,mcp-hub-source-', $routes->getByName('mcp-hub.read')->middleware());
+        $this->assertContains('throttle:30,1,mcp-hub-web-', $routes->getByName('mcp-hub.chat.turn')->middleware());
+    }
+
+    public function test_source_rate_limit_is_configurable_and_falls_back_when_invalid(): void
+    {
+        $throttle = new \ReflectionMethod(\McpHub\Laravel\McpHubServiceProvider::class, 'throttle');
+        if (PHP_VERSION_ID < 80100) {
+            $throttle->setAccessible(true);
+        }
+        config(['mcp-hub.routes.throttle' => '600,1']);
+        $this->assertSame('throttle:600,1,mcp-hub-source-', $throttle->invoke(null));
+        foreach (['0,1', '60', '60,1,other', 'unlimited', 60] as $invalid) {
+            config(['mcp-hub.routes.throttle' => $invalid]);
+            $this->assertSame('throttle:120,1,mcp-hub-source-', $throttle->invoke(null));
+        }
+    }
+
+    public function test_response_buffer_declares_its_stream_without_dynamic_properties(): void
+    {
+        $previous = set_error_handler(function ($level, $message) {
+            throw new \ErrorException($message, 0, $level);
+        }, E_ALL);
+        try {
+            $stream = new \McpHub\Laravel\Support\BoundedStream(16, microtime(true) + 5);
+            $stream->write('bounded');
+        } finally {
+            restore_error_handler();
+        }
+        $stream->rewind();
+        $this->assertSame('bounded', $stream->getContents());
+        $this->assertTrue((new \ReflectionClass($stream))->hasProperty('stream'));
+        $this->expectException(\RuntimeException::class);
+        $stream->write(str_repeat('x', 16));
     }
 
     public function test_empty_tool_arguments_use_a_json_object_over_http(): void

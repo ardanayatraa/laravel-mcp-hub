@@ -8,6 +8,8 @@ The full standalone suite passed: 18 tests and 60 assertions.
 
 The Hub member received the PHP transport's real POST /mcp, validated the dummy
 bearer credential, origin and JSON-RPC metadata, and returned a matching response ID.
+Since 1.0.1 the mock rejects any Origin header, as a Hub with no listed application
+origins does; the PHP transport sends none.
 The only modeled operation is tools/list; unmodeled paths return 501.
 
 The 0.2 compatibility implementation was also run against this same simulation

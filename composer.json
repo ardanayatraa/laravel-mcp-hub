@@ -15,7 +15,7 @@
     "require": {
         "php": "^7.2.5 || ^8.0",
         "dompdf/dompdf": "^3.1.6",
-        "guzzlehttp/guzzle": "^7.15.2",
+        "guzzlehttp/guzzle": "^7.15.2 || ^8.0",
         "illuminate/console": "^5.8 || ^6.0 || ^7.0 || ^8.0 || ^9.0 || ^10.0 || ^11.0 || ^12.0 || ^13.0",
         "illuminate/contracts": "^5.8 || ^6.0 || ^7.0 || ^8.0 || ^9.0 || ^10.0 || ^11.0 || ^12.0 || ^13.0",
         "illuminate/database": "^5.8 || ^6.0 || ^7.0 || ^8.0 || ^9.0 || ^10.0 || ^11.0 || ^12.0 || ^13.0",
@@ -41,7 +41,7 @@
         "test": "phpunit"
     },
     "archive": {
-        "exclude": ["/tests", "/postman", "/scripts", "/.compat", "/.github", "/phpunit.xml", "/.gitignore", "/.gitattributes", "/vendor", "/composer.lock", "/build", "/.phpunit.cache"]
+        "exclude": ["/tests", "/postman", "/scripts", "/.compat", "/.github", "/phpunit.xml", "/.gitignore", "/.gitattributes", "/vendor", "/composer.lock", "/build", "/.phpunit.cache", "/.phpunit.result.cache"]
     },
     "config": {
         "sort-packages": true,
