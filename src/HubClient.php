@@ -9,7 +9,9 @@ use Throwable;
 final class HubClient
 {
     /** The package release reported to the Hub as MCP clientInfo. */
-    const VERSION = '1.0.1';
+    const VERSION = '1.0.2';
+    /** The oldest Hub release this package is tested with; mcp-hub:doctor --online warns below it. */
+    const MINIMUM_HUB_VERSION = '1.1.0';
 
     private $requestId = 0;
     private $connection;
@@ -19,6 +21,12 @@ final class HubClient
     {
         $this->connection = $connection;
         $this->transport = new HubTransport($connection, $http);
+    }
+
+    /** The Hub release from the last answer, or null when the Hub is older than 1.1.0. */
+    public function hubVersion(): ?string
+    {
+        return $this->transport->hubVersion();
     }
 
     public function rpc(string $method, array $params = [], array $headers = []): array

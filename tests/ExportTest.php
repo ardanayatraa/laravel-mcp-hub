@@ -160,13 +160,14 @@ class ExportTest extends TestCase
         $this->assertStringContainsString('"status","sum"'."\n".'"paid","100"', str_replace("\r", '', $bytes));
     }
 
-    public function test_values_with_pii_fail_closed_without_record_or_error_leak(): void
+    public function test_a_personal_value_is_left_out_of_the_report_without_failing_it(): void
     {
         Order::query()->where('id', 1)->update(['title' => 'private.person@example.test']);
         $receipt = $this->create();
-        $this->assertSame('failed', $receipt['status']);
-        $this->assertNull($receipt['download_url']);
-        $this->assertSame('', DB::table('mcp_hub_exports')->first()->payload);
+        $this->assertSame('ready', $receipt['status']);
+        list($format, $bytes) = app(Exports::class)->download($this->actor(), $receipt['export_ref']);
+        $this->assertStringNotContainsString('private.person', $bytes);
+        $this->assertStringNotContainsString('private.person', (string) DB::table('mcp_hub_exports')->first()->payload);
     }
 
     public function test_csv_formula_and_xlsx_inline_strings_are_safe_and_pdf_is_renderable(): void

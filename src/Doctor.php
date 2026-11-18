@@ -9,6 +9,7 @@ final class Doctor
     public function inspect(bool $online = false): array
     {
         $checks = [];
+        $hubVersion = null;
         try {
             $connection = app(Connection::class);
             $checks['application_key'] = preg_match('/^[a-z][a-z0-9_]{0,62}$/D', (string) $connection->get('app_key')) === 1;
@@ -18,11 +19,15 @@ final class Doctor
             $checks['manifest'] = is_array(app(Registry::class)->manifest($connection));
             $checks = array_merge($checks, app(Support\Metadata::class)->inspect());
             if ($online) {
-                $checks['hub_tools'] = is_array(app(HubClient::class)->rpc('tools/list')['tools'] ?? null);
+                $client = app(HubClient::class);
+                $checks['hub_tools'] = is_array($client->rpc('tools/list')['tools'] ?? null);
+                $hubVersion = $client->hubVersion();
+                // Hubs before 1.1.0 do not report a version; they are older than this package is tested with.
+                $checks['hub_version'] = $hubVersion !== null && version_compare($hubVersion, HubClient::MINIMUM_HUB_VERSION, '>=');
             }
         } catch (Throwable $error) {
             $checks['operation'] = false;
         }
-        return ['checks' => $checks, 'ok' => ! in_array(false, $checks, true)];
+        return ['checks' => $checks, 'ok' => ! in_array(false, $checks, true), 'hub_version' => $hubVersion ?? null];
     }
 }
