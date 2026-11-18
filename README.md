@@ -4,7 +4,7 @@
 
 Expose reviewed Laravel resources to an MCP Hub and call the Hub through a scoped server-side client. Applications retain control of business data, account identity, record ownership, and permissions.
 
-**Stable release: 1.0.1.** Includes one-use pairing, application-approved CRUD proposals, protected settings/chat, a scoped Gateway SDK and private CSV/XLSX/PDF reports. See [setup and workflows](DEVELOPMENT.md) and the [upgrade guide](UPGRADE.md). One package supports Laravel 5.8, 6, 7, 8, 9, 10, 11, 12 and 13. The package requires PHP 7.2.5 or later in the PHP 7/8 families; the framework and the application's other dependencies determine the effective PHP requirement.
+**Stable release: 1.0.2.** Works with MCP Hub 1.1.0 or later (`php artisan mcp-hub:doctor --online` checks it). Includes one-use pairing, application-approved CRUD proposals, protected settings/chat, a scoped Gateway SDK and private CSV/XLSX/PDF reports. See [setup and workflows](DEVELOPMENT.md) and the [upgrade guide](UPGRADE.md). One package supports Laravel 5.8, 6, 7, 8, 9, 10, 11, 12 and 13. The package requires PHP 7.2.5 or later in the PHP 7/8 families; the framework and the application's other dependencies determine the effective PHP requirement.
 
 | Laravel reference | PHP tested in CI |
 |---|---|

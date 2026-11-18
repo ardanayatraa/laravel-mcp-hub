@@ -25,7 +25,8 @@ final class FieldValue
         } else {
             throw new RuntimeException('Resource field value is invalid.');
         }
-        Privacy::assertSafe($value);
-        return $value;
+        // Output values only: one value that looks personal is hidden, so a single record never fails a
+        // whole page or report. AI input is still refused outright (Privacy::assertSafe at each entry point).
+        return Privacy::looksPersonal($value) ? null : $value;
     }
 }

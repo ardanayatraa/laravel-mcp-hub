@@ -15,7 +15,8 @@ final class DoctorCommand extends Command
         $result = app(\McpHub\Laravel\Doctor::class)->inspect((bool) $this->option('online'));
         $checks = $result['checks'];
         if ($this->option('json')) {
-            $this->line(Json::encode(['checks' => $checks, 'ok' => ! in_array(false, $checks, true)]));
+            $this->line(Json::encode(['checks' => $checks, 'ok' => ! in_array(false, $checks, true),
+                'hub_version' => $result['hub_version'] ?? null]));
         } else {
             foreach ($checks as $name => $ok) {
                 $this->line($name.': '.($ok ? 'OK' : 'FAIL'));

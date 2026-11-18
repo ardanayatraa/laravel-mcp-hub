@@ -191,6 +191,25 @@ class ConnectorTest extends TestCase
         $client->rpc('tools/list');
     }
 
+    public function test_the_hub_release_is_read_from_its_answers(): void
+    {
+        $history = [];
+        $body = function ($id) { return json_encode(['jsonrpc' => '2.0', 'id' => $id, 'result' => ['tools' => []]]); };
+        $client = $this->clientWithResponses([
+            new Response(200, ['X-Hub-Version' => '1.1.0'], $body(1)),
+            new Response(200, ['X-Hub-Version' => '1.1.0; <script>'], $body(2)),
+            new Response(200, [], $body(3)),
+        ], $history);
+        $this->assertNull($client->hubVersion());
+        $client->rpc('tools/list');
+        $this->assertSame('1.1.0', $client->hubVersion());
+        $this->assertTrue(version_compare($client->hubVersion(), HubClient::MINIMUM_HUB_VERSION, '>='));
+        $client->rpc('tools/list');
+        $this->assertNull($client->hubVersion(), 'a malformed version is ignored');
+        $client->rpc('tools/list');
+        $this->assertNull($client->hubVersion(), 'Hubs before 1.1.0 send no version');
+    }
+
     public function test_package_routes_use_their_own_rate_limit_counters(): void
     {
         $routes = app('router')->getRoutes();

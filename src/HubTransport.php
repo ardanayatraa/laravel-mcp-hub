@@ -13,6 +13,8 @@ final class HubTransport
 {
     private $connection;
     private $http;
+    /** The release the Hub reported on its last answer (X-Hub-Version), or null for Hubs older than 1.1.0. */
+    private $hubVersion;
 
     public function __construct(Connection $connection, ?ClientInterface $http = null)
     {
@@ -86,6 +88,8 @@ final class HubTransport
                 $options['body'] = $payload;
             }
             $response = $this->http->request($method, $url, $options);
+            $reported = $response->getHeaderLine('X-Hub-Version');
+            $this->hubVersion = preg_match('/^\d{1,3}\.\d{1,3}\.\d{1,3}$/D', $reported) ? $reported : null;
             $stream = $response->getBody();
             if ($stream->isSeekable()) {
                 $stream->rewind();
@@ -120,6 +124,11 @@ final class HubTransport
             }
             $sink->close();
         }
+    }
+
+    public function hubVersion(): ?string
+    {
+        return $this->hubVersion;
     }
 
     public function validateUrl(string $url): bool
