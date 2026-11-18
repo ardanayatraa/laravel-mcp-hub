@@ -4,6 +4,7 @@
 
 - A single value that looks like personal data is now left out (sent as `null`) instead of failing the whole page, export or proposal preview. Input from the AI is still refused outright.
 - Fewer false matches, with the same rules as MCP Hub 1.1: numbers (amounts, counts, timestamps) are not treated as phone numbers, ISO dates and times are not, codes that start with letters (`INV-2026-11-0001`) are not, and long digit runs that do not start like a phone number (barcodes) are not. Emails, credentials, `+country` and local `08…` numbers and 16-digit national IDs still match.
+- CI now tests Laravel 12.71.0 and 13.40.0, the releases that fix CVE-2026-128083. Laravel 5.8 to 11 get no fix; their isolated test fixtures record it as a reviewed exception.
 - `mcp-hub:doctor --online` reports the Hub release (`X-Hub-Version`, sent by MCP Hub 1.1.0 and later) and fails its `hub_version` check below 1.1.0. `HubClient::hubVersion()` returns it.
 
 ## 1.0.1 - 2026-11-09

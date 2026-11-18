@@ -158,5 +158,9 @@
     "PKSA-y8c5-1b7f-r1gj": {
         "apply": "block",
         "reason": "Isolated historical framework fixture only; not a security fix. CVE-2026-118516: Host Placeholders Can Match the Start of the Path in Compiled URL Matchers, Bypassing Path-Based Access Control"
+    },
+    "PKSA-yxbx-3c9s-cjt9": {
+        "apply": "block",
+        "reason": "Isolated historical framework fixture only; not a security fix. Laravel: Task Output Injection - Concurrency Process (CVE-2026-128083); Laravel 5.8-11 receive no fix, 12 and 13 rows use patched 12.71.0 and 13.40.0"
     }
 }

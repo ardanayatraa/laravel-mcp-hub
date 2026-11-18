@@ -15,8 +15,8 @@ Expose reviewed Laravel resources to an MCP Hub and call the Hub through a scope
 | 9.52.21 | 8.0, 8.2 |
 | 10.50.4 | 8.1 |
 | 11.45.0 | 8.2 |
-| 12.64.0 | 8.2, 8.4 |
-| 13.38.0 | 8.3, 8.4 |
+| 12.71.0 | 8.2, 8.4 |
+| 13.40.0 | 8.3, 8.4 |
 
 The matrix checks reference patches for every supported major, not every historical patch or every possible PHP/framework combination. Use the latest compatible framework patch where possible. Future Laravel majors will be added after compatibility testing; support is not open-ended.
 
